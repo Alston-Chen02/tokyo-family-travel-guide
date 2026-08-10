@@ -26,7 +26,12 @@ a { color: inherit; }
 .brand span { display: flex; flex-direction: column; line-height: 1.15; }
 .brand b { font-size: 15px; letter-spacing: .12em; }
 .brand small { margin-top: 5px; font-size: 8px; letter-spacing: .23em; color: #aebcaf; }
-.topbar > button { border: 1px solid rgba(255,255,255,.24); background: transparent; color: white; border-radius: 99px; padding: 9px 16px; font-size: 12px; cursor: pointer; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-actions button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: white; border-radius: 99px; padding: 8px 14px; font-size: 12px; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.topbar-actions button:hover { background: rgba(255,255,255,.09); transform: translateY(-1px); }
+.topbar-actions button:focus-visible { outline: 2px solid #e2bd75; outline-offset: 3px; }
+.topbar-actions .line-share { border-color: rgba(85,216,132,.5); }
+.line-share svg { width: 20px; height: 20px; color: #43cf78; flex: 0 0 auto; }
 .hero-content { position: relative; z-index: 1; min-height: 390px; display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 55px 0 60px; }
 .kicker { color: #e2bd75; letter-spacing: .26em; font-size: 11px; font-weight: 800; }
 .hero h1 { margin: 16px 0 18px; font-family: "Noto Serif TC", "Songti TC", serif; font-size: clamp(44px, 6.2vw, 78px); font-weight: 500; letter-spacing: -.04em; line-height: 1.08; }
@@ -192,7 +197,10 @@ footer b { color: white; }
   .hero { padding: 0 18px; }
   .topbar { height: 68px; }
   .brand > i { width: 38px; height: 38px; font-size: 13px; }
-  .topbar > button { padding: 7px 11px; font-size: 10px; }
+  .topbar-actions { gap: 6px; }
+  .topbar-actions button { width: 38px; min-height: 38px; padding: 0; }
+  .topbar-actions button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .print-action::before { content: "備"; display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid currentColor; border-radius: 50%; font-family: var(--font-serif); font-size: 10px; }
   .hero-content { min-height: 310px; padding: 42px 0 46px; }
   .hero h1 { font-size: 43px; }
   .hero-copy { font-size: 12px; }
@@ -251,7 +259,7 @@ footer b { color: white; }
 }
 
 @media print {
-  .topbar button, .desktop-nav, .mobile-nav, .text-button, .action-row { display: none !important; }
+  .topbar-actions, .desktop-nav, .mobile-nav, .text-button, .action-row { display: none !important; }
   .hero { padding: 20px; }
   .hero-content { min-height: auto; padding: 25px 0; }
   .trip-stamp { width: 150px; flex-basis: 150px; }
