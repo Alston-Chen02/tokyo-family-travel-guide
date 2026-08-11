@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
     <meta name="theme-color" content="#202724" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="2026/09/19–09/24 東京親子六日行旅，完整收錄航班、旅宿、行李配送、每日行程、預算與導航。" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="zh_TW" />
@@ -20,6 +22,8 @@
     <meta name="twitter:title" content="東京，慢慢走。｜2026 親子六日行旅" />
     <meta name="twitter:description" content="2026/09/19–09/24 東京親子六日行旅，航班、旅宿、行李配送、每日行程與導航都收在這裡。" />
     <meta name="twitter:image" content="https://alston-chen02.github.io/tokyo-family-travel-guide/og-image-tokyo-family-20260811.png" />
+    <link rel="manifest" href="/tokyo-family-travel-guide/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/tokyo-family-travel-guide/icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -28,31 +32,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      (() => {
-        const replacements = new Map([
-          ['HTB-0926487', '3516233668'],
-          ['TDH-4471', '1759358828'],
-          ['LCK-8820', '3808-4905-6666'],
-        ]);
-
-        const replaceBookingCodes = () => {
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-          let node;
-          while ((node = walker.nextNode())) {
-            let value = node.nodeValue;
-            let nextValue = value;
-            replacements.forEach((correctCode, oldCode) => {
-              nextValue = nextValue.replaceAll(oldCode, correctCode);
-            });
-            if (nextValue !== value) node.nodeValue = nextValue;
-          }
-        };
-
-        replaceBookingCodes();
-        const observer = new MutationObserver(replaceBookingCodes);
-        observer.observe(document.getElementById('root'), { childList: true, subtree: true });
-      })();
-    </script>
   </body>
 </html>
