@@ -64,6 +64,11 @@ const startMinutes = (time: string) => {
   return match ? Number(match[1]) * 60 + Number(match[2]) : 0;
 };
 
+const stopTitleParts = (title: string) => {
+  const [primary, ...rest] = title.split(/[・·]/).map(part => part.trim()).filter(Boolean);
+  return { primary: primary || title, detail: rest.join("・") };
+};
+
 function FlightCard({ flight, label }: { flight: typeof FLIGHTS.outbound; label: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -143,11 +148,18 @@ function TodayPanel({
     ? HOTELS.find(h => day.dateLabel >= h.checkIn && day.dateLabel < h.checkOut) || HOTELS[HOTELS.length - 1]
     : HOTELS[0];
   const nav = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextStop.mapQuery)}`;
+  const title = stopTitleParts(nextStop.title);
   return <section className="today-wrap">
     <article className="today-card">
       <div className="today-copy">
         <span className="eyebrow">{mode === "during" ? "TODAY IN TOKYO" : mode === "before" ? "NEXT TRAVEL DAY" : "TRIP ARCHIVE"}</span>
-        <h2>{mode === "during" ? `現在，前往 ${nextStop.title}` : mode === "before" ? `下一站：${nextStop.title}` : "六日行程已完成"}</h2>
+        {mode === "after"
+          ? <h2 className="today-finished">六日行程已完成</h2>
+          : <h2 className="today-destination">
+              <span>{mode === "during" ? "現在前往" : "下一站"}</span>
+              <strong>{title.primary}</strong>
+              {title.detail && <em>{title.detail}</em>}
+            </h2>}
         <p>{day.dateLabel} · Day {day.day} · {nextStop.time}<br/>{nextStop.subtitle}</p>
       </div>
       <div className="today-meta"><small>當日住宿</small><b>{hotel.name}</b><span>{hotel.area}</span></div>
@@ -291,6 +303,7 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [offlineReady, setOfflineReady] = useState(false);
+  const [now, setNow] = useState(datePartsInTokyo);
 
   useEffect(() => {
     try { setCompleted(new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"))); } catch { /* empty */ }
@@ -301,6 +314,15 @@ export default function Home() {
   }, []);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify([...completed])); }, [completed, hydrated]);
   useEffect(() => {
+    const refreshClock = () => setNow(datePartsInTokyo());
+    const timer = window.setInterval(refreshClock, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const matchingDay = DAYS.find(d => d.date === now.date);
+    if (matchingDay) setDayId(matchingDay.id);
+  }, [now.date]);
+  useEffect(() => {
     const capturePrompt = (event: Event) => { event.preventDefault(); setInstallPrompt(event as InstallPromptEvent); };
     window.addEventListener("beforeinstallprompt", capturePrompt);
     if ("serviceWorker" in navigator) navigator.serviceWorker.ready.then(() => setOfflineReady(true)).catch(() => undefined);
@@ -308,13 +330,17 @@ export default function Home() {
   }, []);
   const day = DAYS.find(d => d.id === dayId) || DAYS[0];
   const tripTotal = useMemo(() => DAYS.reduce((n, d) => n + d.stops.length, 0), []);
-  const now = datePartsInTokyo();
   const tripMode: "before" | "during" | "after" = now.date < DAYS[0].date ? "before" : now.date > DAYS[DAYS.length - 1].date ? "after" : "during";
   const todayDay = DAYS.find(d => d.date === now.date) || (tripMode === "after" ? DAYS[DAYS.length - 1] : DAYS[0]);
-  const timedNextStop = tripMode === "during" ? todayDay.stops.find(stop => startMinutes(stop.time) >= now.minutes) : undefined;
-  const nextStop = timedNextStop
-    || (tripMode === "during" ? todayDay.stops[todayDay.stops.length - 1] : todayDay.stops.find(stop => !completed.has(stop.id)))
-    || todayDay.stops[todayDay.stops.length - 1];
+  const incompleteStops = todayDay.stops.filter(stop => !completed.has(stop.id));
+  const currentStopIndex = tripMode === "during"
+    ? todayDay.stops.reduce((latest, stop, index) => startMinutes(stop.time) <= now.minutes ? index : latest, -1)
+    : -1;
+  const nextStop = tripMode === "during"
+    ? todayDay.stops.slice(Math.max(0, currentStopIndex)).find(stop => !completed.has(stop.id))
+      || todayDay.stops.slice(0, Math.max(0, currentStopIndex)).find(stop => !completed.has(stop.id))
+      || todayDay.stops[todayDay.stops.length - 1]
+    : incompleteStops[0] || todayDay.stops[todayDay.stops.length - 1];
   const toggle = (id: string) => setCompleted(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   const switchView = (next: View) => { setView(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const openToday = () => { setDayId(todayDay.id); setView("schedule"); window.setTimeout(() => document.querySelector(".day-shell")?.scrollIntoView({ behavior: "smooth" }), 40); };
