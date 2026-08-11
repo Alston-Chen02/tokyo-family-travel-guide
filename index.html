@@ -18,5 +18,31 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (() => {
+        const replacements = new Map([
+          ['HTB-0926487', '3516233668'],
+          ['TDH-4471', '1759358828'],
+          ['LCK-8820', '3808-4905-6666'],
+        ]);
+
+        const replaceBookingCodes = () => {
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            let value = node.nodeValue;
+            let nextValue = value;
+            replacements.forEach((correctCode, oldCode) => {
+              nextValue = nextValue.replaceAll(oldCode, correctCode);
+            });
+            if (nextValue !== value) node.nodeValue = nextValue;
+          }
+        };
+
+        replaceBookingCodes();
+        const observer = new MutationObserver(replaceBookingCodes);
+        observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+      })();
+    </script>
   </body>
 </html>
