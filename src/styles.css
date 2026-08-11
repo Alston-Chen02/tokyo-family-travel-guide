@@ -6,13 +6,15 @@
   --gold: #b68a4d;
   --sage: #7b877d;
   --line: #ddd8cd;
-  --font-sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Helvetica Neue", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  --font-display: "LXGW WenKai TC", "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+  --font-numeric: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang TC", sans-serif;
+  --font-serif: var(--font-display);
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--paper); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--font-sans); font-synthesis: none; font-kerning: normal; font-feature-settings: "kern" 1, "liga" 1; letter-spacing: .012em; line-height: 1.6; text-rendering: optimizeLegibility; }
+body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--font-sans); font-size: 15px; font-synthesis: none; font-kerning: normal; font-feature-settings: "kern" 1, "liga" 1; letter-spacing: .008em; line-height: 1.7; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 a { color: inherit; }
@@ -34,7 +36,7 @@ a { color: inherit; }
 .line-share svg { width: 20px; height: 20px; color: #43cf78; flex: 0 0 auto; }
 .hero-content { position: relative; z-index: 1; min-height: 390px; display: flex; align-items: center; justify-content: space-between; gap: 40px; padding: 55px 0 60px; }
 .kicker { color: #e2bd75; letter-spacing: .26em; font-size: 11px; font-weight: 800; }
-.hero h1 { margin: 16px 0 18px; font-family: "Noto Serif TC", "Songti TC", serif; font-size: clamp(44px, 6.2vw, 78px); font-weight: 500; letter-spacing: -.04em; line-height: 1.08; }
+.hero h1 { margin: 16px 0 18px; font-family: var(--font-display); font-size: clamp(44px, 6.2vw, 78px); font-weight: 500; letter-spacing: -.01em; line-height: 1.12; }
 .hero h1 em { color: #d9b77e; font-style: normal; }
 .hero-copy { line-height: 1.9; color: #bec9c1; font-size: 14px; }
 .trip-stamp { flex: 0 0 210px; aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(230,204,157,.56); display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(4deg); box-shadow: inset 0 0 0 10px var(--ink), inset 0 0 0 11px rgba(230,204,157,.18); }
@@ -59,7 +61,7 @@ a { color: inherit; }
 .today-card { position: relative; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(210px, .7fr); gap: 22px 34px; padding: 28px; overflow: hidden; border: 1px solid #d4c9b6; border-radius: 16px; background: linear-gradient(135deg, #fffdf7 0%, #f3eee2 100%); box-shadow: 0 18px 50px rgba(53,45,35,.08); }
 .today-card::after { content: "今"; position: absolute; right: -12px; bottom: -62px; color: rgba(158,73,61,.055); font-family: var(--font-serif); font-size: 180px; font-weight: 800; line-height: 1; }
 .today-copy, .today-meta, .today-actions, .offline-state { position: relative; z-index: 1; }
-.today-copy h2 { margin: 7px 0 5px; font-family: var(--font-serif); font-size: clamp(25px, 4vw, 38px); font-weight: 600; letter-spacing: -.035em; }
+.today-copy h2 { margin: 7px 0 5px; font-family: var(--font-display); font-size: clamp(25px, 4vw, 38px); font-weight: 600; letter-spacing: -.01em; }
 .today-copy p { margin: 0; color: #6c746d; font-size: 12px; line-height: 1.75; }
 .today-meta { align-self: center; padding-left: 22px; border-left: 1px solid #d8d0c1; }
 .today-meta small, .today-meta span { display: block; color: #7a827c; font-size: 10px; }
@@ -103,7 +105,7 @@ a { color: inherit; }
 .day-tabs button.active { color: white; background: var(--red); }
 .day-tabs button.active b { color: white; }
 .day-header { display: flex; justify-content: space-between; gap: 30px; align-items: end; padding: 40px 0 25px; border-bottom: 1px solid var(--line); }
-.day-header h2, .section-heading h2 { margin: 8px 0 5px; font-family: serif; font-size: clamp(28px, 4vw, 43px); font-weight: 500; letter-spacing: -.035em; }
+.day-header h2, .section-heading h2 { margin: 8px 0 5px; font-family: var(--font-display); font-size: clamp(28px, 4vw, 43px); font-weight: 500; letter-spacing: -.01em; }
 .day-header p, .section-heading p { margin: 0; color: #758078; font-size: 13px; }
 .day-progress { flex: 0 0 auto; text-align: right; }
 .day-progress b { font-family: serif; font-size: 31px; }
@@ -215,7 +217,7 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .backup-plans > div p { margin: 8px 0 0; color: #59645c; font-size: 10px; line-height: 1.7; }
 
 
-/* One bilingual type system: editorial serif for display text, sans for UI and data. */
+/* Native UI text, warm editorial headings, and stable tabular numerals. */
 .hero::after, .brand > i, .hero h1, .trip-stamp span, .hero-stats b,
 .flight-route b, .day-tabs button b, .day-header h2, .section-heading h2,
 .day-progress b, .timeline-dot, .stop-time, .hotel-number, .hotel-card h3,
@@ -226,18 +228,19 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .flight-route b, .detail-box strong, .day-tabs button b, .day-progress b,
 .stop-time, .mono, .route-index, .budget-total strong, .budget-grid b,
 .hotline-grid strong, .insurance-phone {
+  font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "kern" 1, "tnum" 1;
 }
 
-.detail-box strong, .mono { font-family: var(--font-sans); }
+.detail-box strong, .mono { font-family: var(--font-numeric); }
 
 
 .calculator-action b { font-family: var(--font-serif); font-size: 17px; line-height: 1; }
 .calculator-backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(21, 27, 24, .62); backdrop-filter: blur(8px); }
 .calculator-card { position: relative; width: min(420px, 100%); padding: 30px; border: 1px solid rgba(255,255,255,.7); border-radius: 18px; background: var(--card); box-shadow: 0 28px 80px rgba(15, 22, 18, .28); }
 .calculator-close { position: absolute; top: 14px; right: 14px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%; color: #6c756f; background: #f5f2eb; font-size: 24px; line-height: 1; cursor: pointer; }
-.calculator-card h2 { margin: 7px 0 4px; font-family: var(--font-serif); font-size: 30px; font-weight: 600; letter-spacing: -.035em; }
+.calculator-card h2 { margin: 7px 0 4px; font-family: var(--font-display); font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
 .calculator-card > p { margin: 0 0 22px; color: #737d76; font-size: 12px; }
 .calculator-field, .calculator-rate { display: block; }
 .calculator-field > span, .calculator-rate > span { display: block; margin-bottom: 7px; color: #68736b; font-size: 11px; font-weight: 700; }
@@ -355,18 +358,20 @@ footer b { color: white; }
 @media screen and (max-width: 800px) {
   .brand small { font-size: 9px; letter-spacing: .18em; }
   .topbar > button { min-height: 38px; font-size: 11px; }
-  .hero-copy { font-size: 13px; }
+  .hero-copy { font-size: 15px; line-height: 1.75; }
   .hero-stats small { font-size: 9px; }
   .hero-stats b { font-size: 18px; }
   .hero-stats span { font-size: 9px; }
-  .flight-route span, .seat-row, .detail-box p, .passenger p { font-size: 11px; }
-  .flight-line small, .detail-box small, .passenger small { font-size: 10px; }
-  .day-header p { font-size: 11px; }
+  .today-copy p, .today-meta small, .today-meta span, .holiday-alert { font-size: 12px; }
+  .flight-route span, .seat-row, .detail-box p, .passenger p { font-size: 12px; }
+  .flight-line small, .detail-box small, .passenger small { font-size: 11px; }
+  .day-header p, .section-heading p { font-size: 13px; line-height: 1.7; }
   .stop-time { font-size: 14px; }
   .stop-title small, .stop-detail > p, .parent-tip { font-size: 13px; }
   .quick-tags span, .transit, .highlights span, .action-row a, .action-row button { font-size: 11px; }
-  .hotel-card .jp, dd, .hotel-note, .luggage-list p { font-size: 12px; }
-  dt, .status, .luggage-list small, .budget-grid small { font-size: 10px; }
+  .hotel-card .jp, dd, .hotel-note, .luggage-list p, .reservation-grid p, .medical-grid p { font-size: 13px; line-height: 1.7; }
+  dt, .status, .luggage-list small, .budget-grid small, .reservation-grid article > div small { font-size: 11px; }
+  .today-actions button, .today-actions a, .text-button, .medical-links a { font-size: 12px; }
   .mobile-nav i { font-family: var(--font-serif); }
   .mobile-nav span { font-size: 10px; }
 }
