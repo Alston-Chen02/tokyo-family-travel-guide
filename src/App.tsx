@@ -15,6 +15,8 @@ import {
 type View = "schedule" | "bookings" | "budget" | "help";
 
 const STORAGE_KEY = "tokyo-family-guide-progress-v2";
+const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
+const DEFAULT_EXCHANGE_RATE = 0.2045;
 const JPY_RATE = 0.215;
 const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
 const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd;
@@ -131,10 +133,68 @@ function Help() {
   return <section className="content-section"><div className="section-heading"><span>PEACE OF MIND</span><h2>安心出發，也安心回家。</h2><p>重要聯絡、旅平險與行前確認，真正需要時一秒找到。</p></div><div className="hotline-grid">{EMERGENCY_INFO.hotlines.map(h => <a key={h.label} href={`tel:${h.number}`}><small>{h.label}</small><strong>{h.number}</strong><span>點一下，立即撥號</span></a>)}</div><article className="insurance-card"><div><span className="eyebrow">24H ASSISTANCE</span><h3>{EMERGENCY_INFO.insurance.title}</h3></div><a className="insurance-phone" href={`tel:${EMERGENCY_INFO.insurance.hotline.split(" ")[0]}`}>{EMERGENCY_INFO.insurance.hotline}</a><dl><div><dt>保單號碼</dt><dd className="mono">{EMERGENCY_INFO.insurance.policyNo}</dd></div><div><dt>保障摘要</dt><dd>{EMERGENCY_INFO.insurance.note}</dd></div></dl></article><div className="travel-notes"><h3>出發前，從容確認。</h3><label><input type="checkbox" /> 護照、機票、住宿憑證</label><label><input type="checkbox" /> Disney App 與門票完成登入</label><label><input type="checkbox" /> Suica / PASMO 與日幣</label><label><input type="checkbox" /> 兒童襪子、推車雨罩、常備藥</label><label><input type="checkbox" /> 行李配送掛牌與照片</label></div></section>;
 }
 
+
+function CurrencyCalculator({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [jpy, setJpy] = useState("");
+  const [rate, setRate] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(EXCHANGE_RATE_STORAGE_KEY));
+      return saved > 0 ? String(saved) : String(DEFAULT_EXCHANGE_RATE);
+    } catch {
+      return String(DEFAULT_EXCHANGE_RATE);
+    }
+  });
+  const jpyAmount = Number(jpy);
+  const rateAmount = Number(rate);
+  const twdAmount = jpy !== "" && Number.isFinite(jpyAmount) && Number.isFinite(rateAmount)
+    ? Math.round(jpyAmount * rateAmount)
+    : 0;
+  const cleanNumber = (value: string) => {
+    const cleaned = value.replace(/,/g, "").replace(/[^\d.]/g, "");
+    const [whole, ...decimals] = cleaned.split(".");
+    return decimals.length ? whole + "." + decimals.join("") : whole;
+  };
+
+  useEffect(() => {
+    if (Number.isFinite(rateAmount) && rateAmount > 0) {
+      localStorage.setItem(EXCHANGE_RATE_STORAGE_KEY, String(rateAmount));
+    }
+  }, [rateAmount]);
+
+  if (!open) return null;
+
+  return <div className="calculator-backdrop" role="presentation" onMouseDown={event => {
+    if (event.target === event.currentTarget) onClose();
+  }} onKeyDown={event => {
+    if (event.key === "Escape") onClose();
+  }}>
+    <section className="calculator-card" role="dialog" aria-modal="true" aria-labelledby="calculator-title">
+      <button className="calculator-close" type="button" onClick={onClose} aria-label="關閉日圓換算">×</button>
+      <span className="eyebrow">QUICK CONVERTER</span>
+      <h2 id="calculator-title">日圓快速換算</h2>
+      <p>輸入商品價格，立即估算約合台幣。</p>
+      <label className="calculator-field">
+        <span>商品價格</span>
+        <div><b>¥</b><input autoFocus inputMode="decimal" type="text" value={jpy} onChange={event => setJpy(cleanNumber(event.target.value))} placeholder="例如 12,800" aria-label="日圓金額" /></div>
+      </label>
+      <div className="calculator-result" aria-live="polite">
+        <small>約合台幣</small>
+        <strong>{"NT$" + money(twdAmount)}</strong>
+      </div>
+      <label className="calculator-rate">
+        <span>參考匯率</span>
+        <input inputMode="decimal" type="text" value={rate} onChange={event => setRate(cleanNumber(event.target.value))} aria-label="日圓兌台幣參考匯率" />
+      </label>
+      <small className="calculator-note">{"1 JPY ≈ NT$" + (rate || "—") + " · 僅供快速估算，實際金額以交易時匯率為準。"}</small>
+    </section>
+  </div>;
+}
+
 export default function Home() {
   const [view, setView] = useState<View>("schedule");
   const [dayId, setDayId] = useState(DAYS[0].id);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -149,7 +209,7 @@ export default function Home() {
 
   return <main>
     <header className="hero">
-      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><button onClick={() => window.print()}>旅程備份 / 列印</button></nav>
+      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
       <div className="hero-content"><div><p className="kicker">TOKYO · SIX DAYS TOGETHER</p><h1>東京，慢慢走。<br/><em>六日親子行旅</em></h1><p className="hero-copy">2026/09/19 — 09/24 · 兩大一小<br/>從第一班航班到最後一件行李，旅程需要的都在這裡。</p></div><div className="trip-stamp"><span>6</span><b>DAYS</b><i>5 NIGHTS</i><small>TPE ⇄ NRT</small></div></div>
       <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completed.size}/{tripTotal}</b><span>已完成 {Math.round(completed.size / tripTotal * 100)}%</span></div></div>
     </header>
@@ -169,6 +229,7 @@ export default function Home() {
     {view === "help" && <Help/>}
 
     <footer><b>東京，慢慢走。· 2026 秋</b><span>所有原定行程與時間完整保留 · 旅途中依現場公告從容調整</span></footer>
-    <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>¥</i><span>旅費</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button></nav>
+    <CurrencyCalculator open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
+    <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
   </main>;
 }
