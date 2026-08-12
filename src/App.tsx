@@ -308,7 +308,7 @@ function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" |
 
   if (!available) return <article className="weather-card weather-upcoming">
     <div className="weather-heading"><span>WEATHER READY</span><b>旅程天氣</b></div>
-    <div className="weather-upcoming-copy"><i>☁</i><div><strong>{day.dateLabel} · {WEATHER_LOCATIONS[day.id].name}</strong><p>逐時預報預計於 {availableFrom.replaceAll("-", "/")} 開放，進入預報範圍後會自動顯示。</p></div></div>
+    <div className="weather-upcoming-copy"><i>☁</i><div><strong>{day.dateLabel} · {WEATHER_LOCATIONS[day.id].name}</strong><p>逐時預報預計於 {availableFrom.split("-").join("/")} 開放，進入預報範圍後會自動顯示。</p></div></div>
     <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noreferrer">日本氣象廳官方預報 ↗</a>
   </article>;
 
