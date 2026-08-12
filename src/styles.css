@@ -306,8 +306,8 @@ footer b { color: white; }
   .day-header h2 { font-size: 27px; }
   .day-header p { font-size: 10px; }
   .day-progress b { font-size: 24px; }
-  .stop-card { margin-left: 26px; }
-  .stop-card::before { left: -17px; }
+  .stop-card { margin-left: 0; }
+  .stop-card::before { display: none; }
   .timeline-dot { left: -28px; width: 23px; height: 23px; border-width: 3px; font-size: 9px; }
   .stop-summary { grid-template-columns: 1fr 26px; gap: 8px; padding: 16px 15px 9px; }
   .stop-time { grid-column: 1; font-size: 13px; }
