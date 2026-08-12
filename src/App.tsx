@@ -24,6 +24,106 @@ const JPY_RATE = 0.215;
 const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
 const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd;
 
+const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
+const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
+const WEATHER_FORECAST_DAYS = 16;
+
+const WEATHER_LOCATIONS: Record<string, { name: string; latitude: number; longitude: number }> = {
+  d1: { name: "押上・東京", latitude: 35.7101, longitude: 139.8107 },
+  d2: { name: "舞濱・浦安", latitude: 35.6329, longitude: 139.8804 },
+  d3: { name: "大宮", latitude: 35.9063, longitude: 139.6238 },
+  d4: { name: "水道橋・東京", latitude: 35.7020, longitude: 139.7537 },
+  d5: { name: "大森・品川", latitude: 35.5885, longitude: 139.7354 },
+  d6: { name: "成田機場", latitude: 35.7720, longitude: 140.3929 },
+};
+
+type WeatherApiResponse = {
+  daily: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    precipitation_probability_max: number[];
+  };
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    apparent_temperature: number[];
+    precipitation_probability: number[];
+    weather_code: number[];
+    wind_speed_10m: number[];
+  };
+};
+
+type WeatherDay = {
+  date: string;
+  location: string;
+  weatherCode: number;
+  maxTemp: number;
+  minTemp: number;
+  rainChance: number;
+};
+
+type WeatherHour = {
+  time: string;
+  temperature: number;
+  apparentTemperature: number;
+  rainChance: number;
+  weatherCode: number;
+  windSpeed: number;
+};
+
+type WeatherSnapshot = {
+  fetchedAt: number;
+  primary: WeatherDay;
+  next?: WeatherDay;
+  hours: WeatherHour[];
+};
+
+const weatherLabel = (code: number) => {
+  if (code === 0) return "晴朗";
+  if (code <= 3) return "多雲";
+  if ([45, 48].includes(code)) return "有霧";
+  if (code <= 57) return "毛毛雨";
+  if (code <= 67) return "下雨";
+  if (code <= 77) return "降雪";
+  if (code <= 82) return "陣雨";
+  if (code <= 86) return "陣雪";
+  return "雷雨";
+};
+
+const weatherIcon = (code: number) => {
+  if (code === 0) return "☀";
+  if (code <= 3) return "☁";
+  if ([45, 48].includes(code)) return "≋";
+  if (code <= 67 || (code >= 80 && code <= 82)) return "☂";
+  if (code <= 86) return "❄";
+  return "⚡";
+};
+
+const dayDistance = (from: string, to: string) =>
+  Math.round((Date.parse(to + "T00:00:00Z") - Date.parse(from + "T00:00:00Z")) / 86_400_000);
+
+const minusDays = (date: string, days: number) => {
+  const value = new Date(date + "T00:00:00Z");
+  value.setUTCDate(value.getUTCDate() - days);
+  return value.toISOString().slice(0, 10);
+};
+
+const weatherUrl = (day: typeof DAYS[number]) => {
+  const location = WEATHER_LOCATIONS[day.id];
+  const params = new URLSearchParams({
+    latitude: String(location.latitude),
+    longitude: String(location.longitude),
+    timezone: "Asia/Tokyo",
+    start_date: day.date,
+    end_date: day.date,
+    daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+    hourly: "temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m",
+  });
+  return `https://api.open-meteo.com/v1/forecast?${params}`;
+};
+
 const transportIcon: Record<string, string> = {
   walk: "步",
   train: "電",
@@ -127,6 +227,136 @@ function StopCard({ stop, index, done, onToggle }: { stop: ItineraryStop; index:
   );
 }
 
+function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" | "during" | "after" }) {
+  const [snapshot, setSnapshot] = useState<WeatherSnapshot | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [stale, setStale] = useState(false);
+  const [error, setError] = useState(false);
+  const today = datePartsInTokyo().date;
+  const daysUntil = dayDistance(today, day.date);
+  const available = mode !== "after" && daysUntil >= 0 && daysUntil < WEATHER_FORECAST_DAYS;
+  const availableFrom = minusDays(day.date, WEATHER_FORECAST_DAYS - 1);
+  const nextDay = DAYS.find(candidate => candidate.day === day.day + 1);
+
+  useEffect(() => {
+    if (!available) return;
+    const cacheId = `${day.id}:${day.date}`;
+    let cached: WeatherSnapshot | null = null;
+    try {
+      const cache = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || "{}") as Record<string, WeatherSnapshot>;
+      cached = cache[cacheId] || null;
+      if (cached) {
+        setSnapshot(cached);
+        setStale(Date.now() - cached.fetchedAt > WEATHER_CACHE_MAX_AGE);
+      }
+    } catch { /* empty */ }
+    if (cached && Date.now() - cached.fetchedAt <= WEATHER_CACHE_MAX_AGE) return;
+
+    const controller = new AbortController();
+    setLoading(true);
+    setError(false);
+    const requestedDays = nextDay ? [day, nextDay] : [day];
+    Promise.all(requestedDays.map(item =>
+      fetch(weatherUrl(item), { signal: controller.signal }).then(response => {
+        if (!response.ok) throw new Error("weather");
+        return response.json() as Promise<WeatherApiResponse>;
+      })
+    )).then(responses => {
+      const makeDay = (item: typeof DAYS[number], response: WeatherApiResponse): WeatherDay => ({
+        date: item.date,
+        location: WEATHER_LOCATIONS[item.id].name,
+        weatherCode: response.daily.weather_code[0],
+        maxTemp: Math.round(response.daily.temperature_2m_max[0]),
+        minTemp: Math.round(response.daily.temperature_2m_min[0]),
+        rainChance: response.daily.precipitation_probability_max[0] ?? 0,
+      });
+      const primary = makeDay(day, responses[0]);
+      const hours = responses[0].hourly.time.map((time, index) => ({
+        time,
+        temperature: Math.round(responses[0].hourly.temperature_2m[index]),
+        apparentTemperature: Math.round(responses[0].hourly.apparent_temperature[index]),
+        rainChance: responses[0].hourly.precipitation_probability[index] ?? 0,
+        weatherCode: responses[0].hourly.weather_code[index],
+        windSpeed: Math.round(responses[0].hourly.wind_speed_10m[index]),
+      })).filter(hour => {
+        const value = Number(hour.time.slice(11, 13));
+        return value >= 7 && value <= 21;
+      });
+      const fresh: WeatherSnapshot = {
+        fetchedAt: Date.now(),
+        primary,
+        next: nextDay && responses[1] ? makeDay(nextDay, responses[1]) : undefined,
+        hours,
+      };
+      setSnapshot(fresh);
+      setStale(false);
+      try {
+        const cache = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || "{}") as Record<string, WeatherSnapshot>;
+        localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ...cache, [cacheId]: fresh }));
+      } catch { /* empty */ }
+    }).catch(err => {
+      if (err?.name !== "AbortError") {
+        setError(true);
+        setStale(Boolean(cached));
+      }
+    }).finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [available, day.id, day.date, nextDay?.id]);
+
+  if (mode === "after") return null;
+
+  if (!available) return <article className="weather-card weather-upcoming">
+    <div className="weather-heading"><span>WEATHER READY</span><b>旅程天氣</b></div>
+    <div className="weather-upcoming-copy"><i>☁</i><div><strong>{day.dateLabel} · {WEATHER_LOCATIONS[day.id].name}</strong><p>逐時預報預計於 {availableFrom.replaceAll("-", "/")} 開放，進入預報範圍後會自動顯示。</p></div></div>
+    <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noreferrer">日本氣象廳官方預報 ↗</a>
+  </article>;
+
+  if (!snapshot && loading) return <article className="weather-card weather-loading">正在取得旅程天氣…</article>;
+  if (!snapshot) return <article className="weather-card weather-loading">暫時無法取得天氣。<button type="button" onClick={() => window.location.reload()}>重新整理</button></article>;
+
+  const riskyHours = snapshot.hours.filter(hour => hour.rainChance >= 50);
+  const rainWindow = riskyHours.length
+    ? `${riskyHours[0].time.slice(11, 16)}–${riskyHours[riskyHours.length - 1].time.slice(11, 16)}`
+    : "";
+  const maxFeelsLike = Math.max(...snapshot.hours.map(hour => hour.apparentTemperature));
+  const maxWind = Math.max(...snapshot.hours.map(hour => hour.windSpeed));
+  const advice = rainWindow
+    ? `${rainWindow} 降雨機率較高，攜帶折傘與推車雨罩。`
+    : maxFeelsLike >= 30
+      ? "體感偏熱，增加補水與室內休息。"
+      : maxWind >= 30
+        ? "風勢偏強，戶外表演與交通請再確認。"
+        : "目前未見明顯天氣風險，仍請留意臨時變化。";
+  const updated = new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(snapshot.fetchedAt));
+
+  return <article className="weather-card">
+    <div className="weather-heading">
+      <div><span>TRIP WEATHER</span><b>{snapshot.primary.location}</b></div>
+      <small>{stale ? "離線快取" : `${updated} 更新`}</small>
+    </div>
+    <div className="weather-summary">
+      <div className="weather-main"><i>{weatherIcon(snapshot.primary.weatherCode)}</i><div><strong>{weatherLabel(snapshot.primary.weatherCode)}</strong><span>{snapshot.primary.minTemp}–{snapshot.primary.maxTemp}°C</span></div></div>
+      <div className="weather-rain"><small>最高降雨</small><b>{snapshot.primary.rainChance}%</b></div>
+      {snapshot.next && <div className="weather-next"><small>明天 · {snapshot.next.location}</small><b>{weatherIcon(snapshot.next.weatherCode)} {snapshot.next.minTemp}–{snapshot.next.maxTemp}°</b><span>降雨 {snapshot.next.rainChance}%</span></div>}
+    </div>
+    <p className="weather-advice">{advice}</p>
+    <div className="weather-actions">
+      <button type="button" onClick={() => setExpanded(value => !value)}>{expanded ? "收合逐時天氣" : "查看 07:00–21:00"}</button>
+      <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noreferrer">氣象廳 ↗</a>
+    </div>
+    {expanded && <div className="weather-hourly">
+      {snapshot.hours.filter((_, index) => index % 2 === 0).map(hour => <div key={hour.time}>
+        <b>{hour.time.slice(11, 16)}</b><i>{weatherIcon(hour.weatherCode)}</i><span>{hour.temperature}°</span><small>{hour.rainChance}%</small>
+      </div>)}
+    </div>}
+    {(error || stale) && <small className="weather-stale">目前顯示上次成功更新的資料，連線恢復後會自動更新。</small>}
+    <small className="weather-source">Weather data by Open-Meteo · 僅供行程調整參考</small>
+  </article>;
+}
+
 function TodayPanel({
   day,
   nextStop,
@@ -171,6 +401,7 @@ function TodayPanel({
       <div className="offline-state"><i className={offlineReady ? "ready" : ""}/><span>{offlineReady ? "離線備援已啟用" : "首次開啟後自動建立離線備援"}</span></div>
     </article>
     <aside className="holiday-alert"><b>9/19–9/23 日本連假提醒</b><span>9/21 敬老日、9/22 國定休日、9/23 秋分日。交通、園區與室內景點皆預留排隊時間，票券盡量事前完成。</span></aside>
+    <WeatherCard day={day} mode={mode} />
   </section>;
 }
 
