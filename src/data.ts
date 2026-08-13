@@ -72,7 +72,6 @@ export const FLIGHTS = {
     cabin: '皇璽桂冠艙',
     cabinCode: 'D 艙',
     duration: '約 3小時 30分',
-    pnr: '6X5RQH',
     counter: '長榮專屬櫃檯 T1',
     passengers: [
       { type: 'adult', label: '大人 1', seat: '05D', meal: '🥩 皇璽桂冠艙獨享餐 (炙烤肋眼牛排 / 日式和食)', preOrder: '已網路預選' },
@@ -94,7 +93,6 @@ export const FLIGHTS = {
     cabin: '皇璽桂冠艙',
     cabinCode: 'D 艙',
     duration: '約 3小時 40分',
-    pnr: '6X5RQH',
     counter: '長榮專屬櫃檯 T1',
     passengers: [
       { type: 'adult', label: '大人 1', seat: '05D', meal: '🥩 皇璽桂冠艙獨享餐 (炙烤肋眼牛排 / 日式和食)', preOrder: '已網路預選' },
@@ -131,8 +129,6 @@ export interface HotelInfo {
   website: string;
   facilities: string[];
   coverQuery: string;
-  confirmationNo?: string;
-  guestName?: string;
   checkInTime?: string;
   checkOutTime?: string;
   addressJp?: string;
@@ -157,8 +153,6 @@ export const HOTELS: HotelInfo[] = [
     website: 'https://tokyobay.hiltonhotel.jp/',
     facilities: ['迪士尼度假區單軌海濱站對面', '豪華海景客房', '室內泳池與休憩設施', '24H FamilyMart 便利商店', '免費接駁巴士 Resort Cruiser', '迪士尼園區中途返房午休'],
     coverQuery: 'Hilton Tokyo Bay hotel exterior waterfront',
-    confirmationNo: '3516233668',
-    guestName: 'CHEN/HSU',
     checkInTime: '15:00',
     checkOutTime: '11:00',
     addressJp: '千葉県浦安市舞浜1-8',
@@ -181,8 +175,6 @@ export const HOTELS: HotelInfo[] = [
     website: 'https://www.tokyodome-hotels.co.jp/',
     facilities: ['35-38 樓高樓層夜景視野', '直通 ASOBono! 室內球池樂園', '東京巨蛋城 LaQua 商城步行 3 分', 'JR 水道橋站步行 2 分', '成城石井超市採買', '巨蛋城亮燈夜景'],
     coverQuery: 'Tokyo Dome Hotel building night city view',
-    confirmationNo: '1759358828',
-    guestName: 'CHEN/HSU',
     checkInTime: '15:00',
     checkOutTime: '11:00',
     addressJp: '東京都文京区後楽1-3-61',
@@ -205,8 +197,6 @@ export const HOTELS: HotelInfo[] = [
     website: 'https://lottecityhotel.jp/',
     facilities: ['48-60㎡ 超大套房', '對面即阿卡將婦幼旗艦店', '地鐵站直通零距離', 'JR 總武線快速免轉車直達成田', '塔樓小型套房寬敞打包', '錦糸町商圈生活機能便利'],
     coverQuery: 'Lotte City Hotel Kinshicho Tokyo building',
-    confirmationNo: '3808-4905-6666',
-    guestName: 'CHEN/HSU',
     checkInTime: '15:00',
     checkOutTime: '11:00',
     addressJp: '東京都墨田区錦糸4-6-1',
@@ -224,7 +214,6 @@ export const EMERGENCY_INFO = {
   insurance: {
     title: '海外旅平險 / 不便險',
     hotline: '0800-024-365 (24H)',
-    policyNo: 'TRV-2026-0919-887',
     note: '航班延誤每 4 小時上限 NT$5,000 · 行李遺失上限 NT$20,000 · 海外突發醫療上限 NT$100 萬',
   },
 };
@@ -301,7 +290,6 @@ export const LUGGAGE_AGENT = {
 
 export const AIRPORTER = {
   name: 'Airporter',
-  orderId: '0809-4831',
   totalJpy: 6710,
   totalTwd: 1361,
   status: 'paid',
@@ -340,7 +328,7 @@ export const LUGGAGE_ROUTE: LuggageRouteItem[] = [
     to: '東京巨蛋飯店',
     method: 'Airporter',
     date: '09/21',
-    note: '09:00 前希爾頓寄放 ➔ 20:00 後巨蛋領取 · 掛牌填訂單號 0809-4831 · 上傳行李照片',
+    note: '09:00 前希爾頓寄放 ➔ 20:00 後巨蛋領取 · 掛牌填寫已儲存在本機保管箱的訂單號 · 上傳行李照片',
     cost: '已付 ¥6,710 / 折合 NT$1,361',
     status: 'paid',
   },
@@ -392,8 +380,8 @@ export const DAYS: DayPlan[] = [
     cityLabel: '成田 ➔ 押上(晴空塔) ➔ 舞濱',
     cityKey: 'urayasu',
     stops: [
-      mkStop('d1s1', '12:25', '成田機場抵達・入境手續', '皇璽桂冠艙優先出關',
-        '抵達成田國際機場第一航廈，皇璽桂冠艙享優先入境審查與行李提領。完成入境後前往 B1 樓層購買 Skyliner 車票與行李托運飯店交付。',
+      mkStop('d1s1', '12:25', '成田機場抵達・入境手續', '較早下機；入境時間仍視現場人流',
+        '抵達成田國際機場第一航廈；商務艙通常可較早下機並享優先行李服務，入境審查仍依現場人流與官方引導。完成入境後前往 B1 樓層處理 Skyliner 車票與行李托運飯店交付。',
         ['Skyliner 車票', 'Suica 西瓜卡', '日幣現金提領', '入境審查'],
         { type: 'flight', label: '長榮 BR184', route: 'TPE → NRT', duration: '3h 30m' },
         'Narita Airport Terminal 1', 'urayasu', '皇璽桂冠艙輕食', '預算依個人消費'),

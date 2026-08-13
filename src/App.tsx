@@ -18,6 +18,8 @@ import {
 type View = "schedule" | "bookings" | "budget" | "help";
 
 const STORAGE_KEY = "tokyo-family-guide-progress-v2";
+const PRIVATE_VAULT_KEY = "tokyo-family-guide-private-vault-v1";
+const CHECKLIST_KEY = "tokyo-family-guide-checklist-v1";
 const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
 const DEFAULT_EXCHANGE_RATE = 0.2045;
 const JPY_RATE = 0.215;
@@ -141,13 +143,34 @@ type InstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-function SensitiveValue({ value, label = "敏感資料" }: { value?: string; label?: string }) {
+const VAULT_FIELDS = [
+  ["pnr", "長榮機票 PNR"], ["guest", "入住人英文姓名"],
+  ["hotel1", "東京灣希爾頓確認碼"], ["hotel2", "東京巨蛋飯店確認碼"],
+  ["hotel3", "樂天城市飯店確認碼"], ["airporter", "Airporter 訂單號"],
+  ["insurance", "保單號碼"],
+] as const;
+
+function PrivateVault() {
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem(PRIVATE_VAULT_KEY) || "{}"); } catch { return {}; }
+  });
   const [visible, setVisible] = useState(false);
-  if (!value) return <span>—</span>;
-  return <span className="sensitive-value">
-    <span className={visible ? "" : "masked"}>{visible ? value : "••••••••"}</span>
-    <button type="button" onClick={() => setVisible(v => !v)} aria-label={`${visible ? "隱藏" : "顯示"}${label}`}>{visible ? "隱藏" : "顯示"}</button>
-  </span>;
+  const update = (key: string, value: string) => {
+    const next = { ...values, [key]: value };
+    setValues(next);
+    localStorage.setItem(PRIVATE_VAULT_KEY, JSON.stringify(next));
+  };
+  const clear = () => {
+    if (!window.confirm("要清除這台裝置上的所有私密旅程資料嗎？")) return;
+    localStorage.removeItem(PRIVATE_VAULT_KEY);
+    setValues({});
+  };
+  return <section className="private-vault" aria-labelledby="vault-title">
+    <div className="vault-heading"><div><span className="eyebrow">ON-DEVICE VAULT</span><h2 id="vault-title">本機私密保管箱</h2></div><button type="button" onClick={() => setVisible(v => !v)}>{visible ? "全部隱藏" : "顯示資料"}</button></div>
+    <p>內容只儲存在目前瀏覽器，不會寫入公開網站。瀏覽器儲存區並非加密保管庫；請使用手機螢幕鎖，且不要在公用裝置輸入。</p>
+    <div className="vault-grid">{VAULT_FIELDS.map(([key, label]) => <label key={key}><span>{label}</span><input type={visible ? "text" : "password"} value={values[key] || ""} onChange={event => update(key, event.target.value)} autoComplete="off" placeholder="尚未儲存" /></label>)}</div>
+    <button className="vault-clear" type="button" onClick={clear}>清除這台裝置的私密資料</button>
+  </section>;
 }
 
 const datePartsInTokyo = () => {
@@ -189,7 +212,7 @@ function FlightCard({ flight, label }: { flight: typeof FLIGHTS.outbound; label:
       </div>
       <button className="text-button" onClick={() => setOpen(!open)}>{open ? "收合機票細節" : "查看機票、餐點與行李"}</button>
       {open && <div className="details-grid">
-        <div className="detail-box"><small>訂位代碼 PNR</small><strong><SensitiveValue value={flight.pnr} label="機票訂位代碼" /></strong><p>{flight.counter}</p></div>
+        <div className="detail-box"><small>訂位代碼 PNR</small><strong>請至本機保管箱</strong><p>{flight.counter}</p></div>
         <div className="detail-box"><small>託運行李</small><strong>{flight.baggage}</strong><p>每位旅客 2 件免費託運</p></div>
         {flight.passengers.map((p, i) => <div className="passenger" key={i}><b>{p.label} · {p.seat}</b><p>{p.meal}</p><small>✓ {p.preOrder}</small></div>)}
       </div>}
@@ -484,7 +507,7 @@ function TodayPanel({
         <a href={nav} target="_blank" rel="noreferrer">下一站導航 ↗</a>
         {installPrompt && <button type="button" className="secondary" onClick={onInstall}>安裝到手機</button>}
       </div>
-      <div className="offline-state"><i className={offlineReady ? "ready" : ""}/><span>{offlineReady ? "離線備援已啟用" : "首次開啟後自動建立離線備援"}</span></div>
+      <div className="offline-state"><i className={offlineReady ? "ready" : ""}/><span>{offlineReady ? "行程已離線保存 · 導航、天氣與官方連結需網路" : "首次開啟後自動預載離線行程"}</span></div>
     </article>
     <aside className="holiday-alert"><b>9/19–9/23 日本連假提醒</b><span>9/21 敬老日、9/22 國定休日、9/23 秋分日。交通、園區與室內景點皆預留排隊時間，票券盡量事前完成。</span></aside>
     <WeatherCard day={day} mode={mode} />
@@ -504,7 +527,8 @@ function ReservationHub() {
 
 function Bookings() {
   return <section className="content-section">
-    <div className="section-heading"><span>STAY & LUGGAGE</span><h2>旅宿與行李，都安排妥當。</h2><p>從入住到交接，一頁收好所有地址、電話與確認資訊；確認碼預設遮住，避免旁人一眼看光。</p></div>
+    <div className="section-heading"><span>STAY & LUGGAGE</span><h2>旅宿與行李，都安排妥當。</h2><p>公開頁只放地址、電話與執行資訊；確認碼與姓名請儲存在這台裝置的私密保管箱。</p></div>
+    <PrivateVault />
     <div className="hotel-grid">
       {HOTELS.map((hotel, i) => <article className="hotel-card" key={hotel.id}>
         <div className="hotel-number">0{i + 1}</div>
@@ -512,8 +536,6 @@ function Bookings() {
         <dl>
           <div><dt>房型</dt><dd>{hotel.roomType}</dd></div>
           <div><dt>入住 / 退房</dt><dd>{hotel.checkInTime} / {hotel.checkOutTime}</dd></div>
-          <div><dt>訂房確認碼</dt><dd className="mono"><SensitiveValue value={hotel.confirmationNo} label={`${hotel.name}訂房確認碼`} /></dd></div>
-          <div><dt>入住人</dt><dd>{hotel.guestName}</dd></div>
           <div><dt>日文地址</dt><dd className="jp">{hotel.addressJp}</dd></div>
           <div><dt>電話</dt><dd><a href={`tel:${hotel.phone}`}>{hotel.phone}</a></dd></div>
         </dl>
@@ -535,10 +557,34 @@ function Budget() {
     ["當地交通", "¥12,000", "預估 · Skyliner、Suica / PASMO"],
     ["餐飲與購物", "¥150,000", "預估"],
     ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
-    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, `已付款 · 訂單 ${AIRPORTER.orderId}`],
+    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, "已付款 · 訂單號存於本機保管箱"],
     ["回程機場專車", `NT$${money(AIRPORT_TRANSFER.totalTwd)}`, "預估 · 含嬰兒座椅"],
   ];
   return <section className="content-section"><div className="section-heading"><span>TRIP BUDGET</span><h2>把預算，留給值得的風景。</h2><p>費用依原規劃完整保留 · 換算匯率 1 JPY ≈ NT$0.215</p></div><div className="budget-total"><small>六天五夜 · 旅程預算</small><strong>NT${money(budgetTwd)}</strong><span>日本當地 ¥{money(budgetJpy)} + 台幣固定支出</span></div><div className="budget-grid">{items.map(([label, amount, note]) => <article key={label}><span>{label}</span><b>{amount}</b><small>{note}</small></article>)}</div></section>;
+}
+
+const PRETRIP_CHECKS = [
+  "護照、機票、住宿憑證已下載離線副本",
+  "Visit Japan Web 與入境 QR Code 已準備",
+  "Disney App 與門票完成登入",
+  "PokéPark App、票種與同團票券",
+  "Suica / PASMO、日幣、eSIM 與行動電源",
+  "兒童襪子、推車雨罩、常備藥與過敏資訊",
+  "行李配送掛牌、訂單號與行李照片",
+  "六日行程曾開啟一次，並完成飛航模式離線測試",
+];
+
+function TravelChecklist() {
+  const [checked, setChecked] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || "{}"); } catch { return {}; }
+  });
+  const toggleCheck = (item: string, value: boolean) => {
+    const next = { ...checked, [item]: value };
+    setChecked(next);
+    localStorage.setItem(CHECKLIST_KEY, JSON.stringify(next));
+  };
+  const completed = PRETRIP_CHECKS.filter(item => checked[item]).length;
+  return <div className="travel-notes"><div className="checklist-heading"><h3>出發前，從容確認。</h3><strong>{completed}/{PRETRIP_CHECKS.length}</strong></div>{PRETRIP_CHECKS.map(item => <label key={item}><input type="checkbox" checked={!!checked[item]} onChange={event => toggleCheck(item, event.target.checked)} /> {item}</label>)}</div>;
 }
 
 function Help() {
@@ -549,9 +595,9 @@ function Help() {
       <article><span className="eyebrow">NEARBY CARE</span><h3>附近兒科與急診</h3><p>依當下住宿地點開啟地圖搜尋；危急狀況直接撥 119。</p><div className="medical-links">{MEDICAL_SEARCHES.map(item => <a key={item.label} href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query)}`} target="_blank" rel="noreferrer">{item.label} ↗</a>)}</div></article>
       <article><span className="eyebrow">SHOW THIS SCREEN</span><h3>親子求助日文</h3><dl className="phrase-list">{EMERGENCY_PHRASES.map(item => <div key={item.zh}><dt>{item.zh}</dt><dd lang="ja">{item.jp}</dd></div>)}</dl></article>
     </div>
-    <article className="insurance-card"><div><span className="eyebrow">24H ASSISTANCE</span><h3>{EMERGENCY_INFO.insurance.title}</h3></div><a className="insurance-phone" href={`tel:${EMERGENCY_INFO.insurance.hotline.split(" ")[0]}`}>{EMERGENCY_INFO.insurance.hotline}</a><dl><div><dt>保單號碼</dt><dd className="mono"><SensitiveValue value={EMERGENCY_INFO.insurance.policyNo} label="保單號碼" /></dd></div><div><dt>保障摘要</dt><dd>{EMERGENCY_INFO.insurance.note}</dd></div></dl></article>
-    <div className="backup-plans"><h3>行程卡住時，照這個順序。</h3><div><b>交通延誤</b><p>先保留住宿與已預約票券；購物、銀座與非指定時間景點優先刪除。用官方 App／站務員確認替代線，必要時直接叫車。</p></div><div><b>孩子不舒服</b><p>回最近飯店休息 → JNTO 中文熱線協助找醫療 → 有呼吸困難、意識不清或嚴重過敏直接 119。</p></div><div><b>班機／回程異動</b><p>先聯絡長榮與接送司機，再通知保險公司；保留延誤證明、收據與 App 截圖。</p></div></div>
-    <div className="travel-notes"><h3>出發前，從容確認。</h3><label><input type="checkbox" /> 護照、機票、住宿憑證</label><label><input type="checkbox" /> Disney App 與門票完成登入</label><label><input type="checkbox" /> PokéPark App、票種與同團票券</label><label><input type="checkbox" /> Suica / PASMO、日幣與行動電源</label><label><input type="checkbox" /> 兒童襪子、推車雨罩、常備藥</label><label><input type="checkbox" /> 行李配送掛牌與照片</label></div>
+    <article className="insurance-card"><div><span className="eyebrow">24H ASSISTANCE</span><h3>{EMERGENCY_INFO.insurance.title}</h3></div><a className="insurance-phone" href={`tel:${EMERGENCY_INFO.insurance.hotline.split(" ")[0]}`}>{EMERGENCY_INFO.insurance.hotline}</a><dl><div><dt>保單號碼</dt><dd>請至「住宿」頁的本機保管箱</dd></div><div><dt>保障摘要</dt><dd>{EMERGENCY_INFO.insurance.note}</dd></div></dl></article>
+    <div className="backup-plans"><h3>行程卡住時，照這個順序。</h3><div><b>交通延誤</b><p>先保留住宿與已預約票券；購物與非指定時間景點優先刪除。用官方 App／站務員確認替代線，必要時直接叫車。</p></div><div><b>孩子不舒服</b><p>回最近飯店休息 → JNTO 中文熱線協助找醫療 → 有呼吸困難、意識不清或嚴重過敏直接 119。</p></div><div><b>班機／回程異動</b><p>先聯絡長榮與接送司機，再通知保險公司；保留延誤證明、收據與 App 截圖。</p></div><div><b>護照／手機遺失</b><p>先警局報案並留存受理號碼 → 聯絡駐日代表處／電信業者 → 更改重要帳號密碼與凍結行動支付。</p></div><div><b>地震／颱風</b><p>先依飯店、車站與場館廣播就地避難，避免搭電梯；保留電力，再透過 JNTO 與官方防災資訊確認後續交通。</p></div></div>
+    <TravelChecklist />
   </section>;
 }
 
