@@ -1,4 +1,4 @@
-const CACHE_NAME = "tokyo-family-guide-v1-20260812-trip-weather";
+const CACHE_NAME = "tokyo-family-guide-v2-20260813-disney-family-map";
 const APP_ROOT = "/tokyo-family-travel-guide/";
 const APP_SHELL = [APP_ROOT, `${APP_ROOT}manifest.webmanifest`, `${APP_ROOT}icon-192.png`, `${APP_ROOT}icon-512.png`];
 

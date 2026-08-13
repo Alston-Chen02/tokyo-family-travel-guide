@@ -179,6 +179,69 @@ a { color: inherit; }
 .action-row a, .action-row button { border: 1px solid #cbd2cb; background: transparent; padding: 9px 13px; color: #3e5043; text-decoration: none; font-size: 10px; font-weight: 800; cursor: pointer; }
 .action-row button { margin-left: auto; color: white; background: var(--ink); border-color: var(--ink); }
 
+.disney-guide { margin-top: 28px; overflow: hidden; border: 1px solid #d4c9b6; border-radius: 18px; background: #fffdf8; box-shadow: 0 18px 50px rgba(53,45,35,.07); }
+.disney-guide-head { display: flex; align-items: end; justify-content: space-between; gap: 22px; padding: 25px 28px 21px; border-bottom: 1px solid #ded6c7; background: linear-gradient(120deg, #fffaf0, #f0eee4); }
+.disney-guide-head span { color: var(--red); font-size: 9px; font-weight: 900; letter-spacing: .18em; }
+.disney-guide-head h3 { margin: 6px 0 3px; font-family: var(--font-display); font-size: clamp(23px, 3vw, 31px); font-weight: 600; line-height: 1.35; }
+.disney-guide-head p { margin: 0; color: #727b74; font-size: 11px; }
+.disney-guide-head > a { flex: 0 0 auto; padding: 9px 12px; border: 1px solid #b9c4ba; border-radius: 8px; color: #3f594a; background: rgba(255,255,255,.65); font-size: 10px; font-weight: 800; text-decoration: none; }
+.disney-map-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(290px, .75fr); min-height: 530px; }
+.disney-map-canvas { position: relative; min-width: 0; overflow: hidden; border-right: 1px solid #ded6c7; background: radial-gradient(circle at 55% 38%, #faf8ee, #e8eee8 72%); }
+.disney-map-canvas svg { display: block; width: 100%; height: 100%; min-height: 530px; }
+.park-water { fill: #cbdedb; stroke: #a9c6c1; stroke-width: 2; }
+.park-land { stroke: #d4c8ac; stroke-width: 2; }
+.park-zone { stroke: rgba(92,91,69,.18); stroke-width: 1.4; transition: opacity .25s, filter .25s; }
+.park-zone.adventure { fill: rgba(115,146,102,.22); }
+.park-zone.fantasy { fill: rgba(201,154,142,.22); }
+.park-zone.toon { fill: rgba(218,176,83,.22); }
+.park-zone.tomorrow { fill: rgba(107,142,160,.20); }
+.park-zone.bazaar { fill: rgba(181,142,88,.16); }
+.park-zone.is-muted { opacity: .28; filter: grayscale(.6); }
+.park-path { fill: none; stroke: #9e493d; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 4 10; opacity: .76; }
+.castle-mark { fill: #fffaf0; stroke: #846d57; stroke-width: 2; stroke-linejoin: round; }
+.castle-caption, .zone-caption, .park-entrance { fill: #58625b; font-family: var(--font-sans); font-weight: 800; text-anchor: middle; }
+.castle-caption { font-size: 9px; letter-spacing: .08em; }
+.zone-caption { font-size: 11px; letter-spacing: .05em; }
+.park-entrance { font-size: 8px; letter-spacing: .2em; }
+.map-pin { cursor: pointer; outline: none; transition: opacity .2s; }
+.map-pin:focus-visible .pin-halo { stroke: #202724; stroke-width: 3; }
+.map-pin.is-muted { opacity: .33; }
+.pin-halo { fill: rgba(255,255,255,.5); stroke: rgba(158,73,61,.18); stroke-width: 8; transition: stroke .2s, transform .2s; }
+.pin-core { fill: #fffef9; stroke: #9e493d; stroke-width: 2; }
+.map-pin.is-active .pin-halo { stroke: rgba(158,73,61,.32); stroke-width: 11; }
+.map-pin.is-active .pin-core { fill: #9e493d; }
+.pin-icon { fill: none; stroke: #9e493d; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.map-pin.is-active .pin-icon { stroke: white; }
+.pin-number { fill: white; stroke: #fffdf8; stroke-width: 2; paint-order: stroke; font: 900 9px var(--font-numeric); text-anchor: middle; }
+.map-pin .pin-number { fill: #7e3d35; }
+.map-pin.is-active .pin-number { fill: #7e3d35; }
+.map-compass { position: absolute; top: 18px; right: 20px; display: grid; justify-items: center; color: #52675b; }
+.map-compass b { font-size: 9px; letter-spacing: .1em; }
+.map-compass i { width: 1px; height: 27px; margin-top: 2px; background: #52675b; transform: rotate(12deg); transform-origin: top; }
+.map-compass i::before { content: ""; position: absolute; width: 7px; height: 7px; border-left: 1px solid #52675b; border-top: 1px solid #52675b; transform: translate(-3px, 0) rotate(45deg); }
+.map-note { position: absolute; left: 16px; bottom: 10px; margin: 0; color: #738079; font-size: 8px; letter-spacing: .05em; }
+.disney-route-panel { display: flex; flex-direction: column; padding: 22px; background: #fffdf8; }
+.route-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.route-tabs button { min-width: 0; display: flex; align-items: center; gap: 7px; padding: 8px 9px; border: 1px solid #d9d5ca; border-radius: 8px; color: #59645c; background: #f8f6ef; text-align: left; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.route-tabs button:hover { transform: translateY(-1px); }
+.route-tabs button.active { border-color: var(--red); color: white; background: var(--red); }
+.route-tabs button b { flex: 0 0 auto; display: grid; place-items: center; width: 21px; height: 21px; border: 1px solid currentColor; border-radius: 50%; font: 800 10px var(--font-numeric); }
+.route-tabs button span { overflow: hidden; font-size: 9px; font-weight: 800; white-space: nowrap; text-overflow: ellipsis; }
+.route-detail { min-height: 158px; margin-top: 14px; padding: 18px; border-radius: 12px; color: white; background: linear-gradient(135deg, #26312b, #3a463f); }
+.route-detail small { color: #d7b87d; font-size: 8px; font-weight: 900; letter-spacing: .13em; }
+.route-detail h4 { margin: 7px 0 5px; font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.route-detail p { margin: 0; color: #cad3cc; font-size: 11px; line-height: 1.75; }
+.ride-legend { display: grid; gap: 11px; margin-top: auto; padding-top: 18px; }
+.ride-legend > div { display: flex; align-items: center; gap: 10px; }
+.ride-legend i { flex: 0 0 auto; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font: 900 9px var(--font-numeric); font-style: normal; }
+.ride-safe { color: #45634e; background: #e3eee5; }
+.ride-seat { color: #7c5d2c; background: #f5e7c9; }
+.ride-height { color: #7d433b; background: #f2dfdc; }
+.ride-legend span { display: grid; color: #737c76; font-size: 9px; line-height: 1.45; }
+.ride-legend b { color: #3b4840; font-size: 10px; }
+.disney-guide-foot { display: flex; justify-content: space-between; gap: 18px; padding: 12px 22px; color: #6f786f; background: #ecefe8; font-size: 9px; }
+.disney-guide-foot a { flex: 0 0 auto; color: #3e5a49; font-weight: 800; text-decoration: none; }
+
 .content-section { padding-top: 58px; padding-bottom: 100px; }
 .section-heading { max-width: 700px; margin-bottom: 32px; }
 .section-heading.compact { margin-top: 60px; }
@@ -348,6 +411,29 @@ footer b { color: white; }
   .day-header h2 { font-size: 27px; }
   .day-header p { font-size: 10px; }
   .day-progress b { font-size: 24px; }
+  .disney-guide { margin-top: 18px; border-radius: 15px; }
+  .disney-guide-head { align-items: start; flex-direction: column; gap: 13px; padding: 19px 17px 16px; }
+  .disney-guide-head h3 { font-size: 24px; }
+  .disney-guide-head p { font-size: 12px; line-height: 1.65; }
+  .disney-guide-head > a { width: 100%; padding: 10px 12px; text-align: center; font-size: 11px; }
+  .disney-map-layout { grid-template-columns: 1fr; min-height: 0; }
+  .disney-map-canvas { border-right: 0; border-bottom: 1px solid #ded6c7; }
+  .disney-map-canvas svg { min-height: 0; aspect-ratio: 1.06; }
+  .zone-caption { font-size: 13px; }
+  .map-note { font-size: 9px; }
+  .disney-route-panel { padding: 15px; }
+  .route-tabs { display: flex; overflow-x: auto; padding-bottom: 3px; scroll-snap-type: x mandatory; }
+  .route-tabs button { flex: 0 0 112px; scroll-snap-align: start; }
+  .route-tabs button span { font-size: 10px; }
+  .route-detail { min-height: 145px; padding: 16px; }
+  .route-detail small { font-size: 9px; }
+  .route-detail h4 { font-size: 21px; }
+  .route-detail p { font-size: 12px; }
+  .ride-legend { margin-top: 16px; }
+  .ride-legend span { font-size: 10px; }
+  .ride-legend b { font-size: 11px; }
+  .disney-guide-foot { flex-direction: column; gap: 6px; padding: 12px 15px; font-size: 10px; line-height: 1.55; }
+  .disney-guide-foot a { align-self: flex-start; }
   .stop-card { margin-left: 0; }
   .stop-card::before { display: none; }
   .timeline-dot { left: -28px; width: 23px; height: 23px; border-width: 3px; font-size: 9px; }
@@ -396,12 +482,12 @@ footer b { color: white; }
 }
 
 @media print {
-  .topbar-actions, .desktop-nav, .mobile-nav, .text-button, .action-row, .calculator-backdrop { display: none !important; }
+  .topbar-actions, .desktop-nav, .mobile-nav, .text-button, .action-row, .calculator-backdrop, .route-tabs { display: none !important; }
   .hero { padding: 20px; }
   .hero-content { min-height: auto; padding: 25px 0; }
   .trip-stamp { width: 150px; flex-basis: 150px; }
   .flight-section, .day-shell, .content-section { max-width: none; padding: 15px; }
-  .stop-card, .flight-card, .hotel-card { break-inside: avoid; box-shadow: none; }
+  .stop-card, .flight-card, .hotel-card, .disney-guide { break-inside: avoid; box-shadow: none; }
 }
 
 @media screen and (max-width: 800px) {
