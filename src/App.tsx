@@ -227,6 +227,92 @@ function StopCard({ stop, index, done, onToggle }: { stop: ItineraryStop; index:
   );
 }
 
+const DISNEY_ROUTE_STEPS = [
+  { id: 1, time: "入園後 0–10 分", zone: "入口／世界市集", title: "App 任務先完成", note: "購買美女與野獸 DPA、安排夜間遊行，並完成 10:45 左右的行動點餐。", x: 374, y: 506, phase: "start", icon: "gate" },
+  { id: 2, time: "開園–10:30", zone: "探險／西部樂園", title: "兩項可抱乘設施", note: "叢林巡航 → 西部沿河鐵路；任一等待超過 25 分鐘就往下一區。", x: 148, y: 316, phase: "morning", icon: "boat" },
+  { id: 3, time: "10:30–13:00", zone: "夢幻樂園", title: "提早午餐與主目標", note: "先吃午餐，再依 DPA 體驗美女與野獸；鄰近只挑 1–2 項。", x: 389, y: 134, phase: "noon", icon: "castle" },
+  { id: 4, time: "13:00–15:30", zone: "卡通城", title: "遊行、換尿布、午睡", note: "固定休息，不追設施數量；利用卡通城嬰兒中心補水整理。", x: 611, y: 266, phase: "rest", icon: "home" },
+  { id: 5, time: "15:30–18:30", zone: "明日樂園", title: "依身高與體力選玩", note: "怪獸電力公司需自行坐穩；杯麵需滿 81 cm，怕旋轉就跳過。", x: 590, y: 423, phase: "evening", icon: "star" },
+  { id: 6, time: "夜間", zone: "世界市集／出口", title: "晚餐、購物、遊行後退園", note: "17:00 前完成晚餐與購物；夜間遊行散場後沿世界市集直接退園。", x: 401, y: 516, phase: "night", icon: "bag" },
+] as const;
+
+function DisneyMapIcon({ type }: { type: typeof DISNEY_ROUTE_STEPS[number]["icon"] }) {
+  if (type === "boat") return <path d="M-9 3h18l-3 6H-6zM-5 1v-8l8 4-8 3" />;
+  if (type === "castle") return <path d="M-9 8V-4h4v-5l4 3 4-3v5h4V8M-5 2h12M-1 8V3h4v5" />;
+  if (type === "home") return <path d="M-9 0 0-8 9 0v9H3V3h-6v6h-6z" />;
+  if (type === "star") return <path d="m0-9 2.7 5.5 6.1.9-4.4 4.3 1 6.1L0 4l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9z" />;
+  if (type === "bag") return <path d="M-8-3h16l-1 12H-7zM-4-3v-2a4 4 0 0 1 8 0v2" />;
+  return <path d="M-9 8V-4h18V8M-6-4v-4h12v4M-3 8V2h6v6" />;
+}
+
+function DisneylandFamilyMap() {
+  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const selected = DISNEY_ROUTE_STEPS.find(step => step.id === activeStep);
+  const selectStep = (id: number) => setActiveStep(current => current === id ? null : id);
+
+  return <section className="disney-guide" aria-labelledby="disney-guide-title">
+    <header className="disney-guide-head">
+      <div><span>FAMILY PARK ROUTE</span><h3 id="disney-guide-title">第一次帶幼兒，順時針慢慢玩。</h3><p>依園區實際相對方位整理；只向前、不折返，DPA 指定時間除外。</p></div>
+      <a href="https://www.tokyodisneyresort.jp/tc/tdl/map" target="_blank" rel="noreferrer">開啟官方即時地圖 ↗</a>
+    </header>
+    <div className="disney-map-layout">
+      <div className="disney-map-canvas">
+        <svg viewBox="0 0 760 590" role="img" aria-label="東京迪士尼樂園親子順時針攻略地圖">
+          <defs>
+            <linearGradient id="parkPaper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f7f1df"/><stop offset="1" stopColor="#e8eddf"/></linearGradient>
+            <filter id="pinShadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="4" stdDeviation="5" floodOpacity=".18"/></filter>
+            <marker id="routeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0v6l9-3z" fill="#9e493d"/></marker>
+          </defs>
+          <path className="park-water" d="M32 249C43 126 190 34 352 24c183-11 337 71 374 208 34 126-51 269-190 315-151 50-359 8-451-101C39 392 24 317 32 249Z" />
+          <path className="park-land" d="M67 250C80 144 207 68 354 59c156-9 286 57 325 172 37 110-40 230-160 273-134 48-312 14-397-79-47-51-64-115-55-175Z" fill="url(#parkPaper)" />
+          <path className={`park-zone adventure ${activeStep && activeStep !== 2 ? "is-muted" : ""}`} d="M91 239c34-76 112-131 198-153l39 145-90 126-152-25c-6-31-4-63 5-93Z" />
+          <path className={`park-zone fantasy ${activeStep && activeStep !== 3 ? "is-muted" : ""}`} d="m289 86 52-15c88-17 171 2 230 45l-44 151-199-36Z" />
+          <path className={`park-zone toon ${activeStep && activeStep !== 4 ? "is-muted" : ""}`} d="m571 116 30 25c46 41 73 94 77 146l-151-20Z" />
+          <path className={`park-zone tomorrow ${activeStep && activeStep !== 5 ? "is-muted" : ""}`} d="m678 287-2 35c-9 77-67 145-157 182l-53-135 61-102Z" />
+          <path className={`park-zone bazaar ${activeStep && ![1,6].includes(activeStep) ? "is-muted" : ""}`} d="m519 504-42 13c-85 21-183 8-260-28l71-131 178 11Z" />
+          <path className="park-path" d="M361 501C245 476 151 410 141 326c-13-103 95-194 236-203 145-9 263 70 266 176 2 84-70 161-185 192" markerEnd="url(#routeArrow)" />
+          <path className="castle-mark" d="M365 260v-52h16v-23l13 10 13-10v23h16v52M372 260v-32h45v32M388 260v-17h12v17" />
+          <text className="castle-caption" x="394" y="278">灰姑娘城堡</text>
+          <text className="zone-caption" x="179" y="216">探險／西部</text>
+          <text className="zone-caption" x="407" y="104">夢幻樂園</text>
+          <text className="zone-caption" x="600" y="202">卡通城</text>
+          <text className="zone-caption" x="599" y="369">明日樂園</text>
+          <text className="zone-caption" x="348" y="451">世界市集</text>
+          {DISNEY_ROUTE_STEPS.map(step => <g
+            key={step.id}
+            className={`map-pin ${activeStep === step.id ? "is-active" : ""} ${activeStep && activeStep !== step.id ? "is-muted" : ""}`}
+            transform={`translate(${step.x} ${step.y})`}
+            role="button" tabIndex={0} aria-label={`第 ${step.id} 站：${step.zone}`} aria-pressed={activeStep === step.id}
+            onClick={() => selectStep(step.id)}
+            onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectStep(step.id); } }}>
+            <circle className="pin-halo" r="25" />
+            <circle className="pin-core" r="20" filter="url(#pinShadow)" />
+            <g className="pin-icon"><DisneyMapIcon type={step.icon} /></g>
+            <text className="pin-number" x="17" y="-15">{step.id}</text>
+          </g>)}
+          <text className="park-entrance" x="378" y="558">MAIN ENTRANCE</text>
+        </svg>
+        <div className="map-compass" aria-hidden="true"><b>N</b><i /></div>
+        <p className="map-note">攻略示意圖 · 非官方比例地圖</p>
+      </div>
+      <div className="disney-route-panel">
+        <div className="route-tabs" aria-label="選擇攻略站點">
+          {DISNEY_ROUTE_STEPS.map(step => <button key={step.id} type="button" className={activeStep === step.id ? "active" : ""} onClick={() => selectStep(step.id)} aria-pressed={activeStep === step.id}><b>{step.id}</b><span>{step.zone}</span></button>)}
+        </div>
+        <article className="route-detail" aria-live="polite">
+          {selected ? <><small>STOP {selected.id} · {selected.time}</small><h4>{selected.title}</h4><p>{selected.note}</p></> : <><small>ONE-WAY FAMILY PLAN</small><h4>點選地圖站點，查看當下任務。</h4><p>現場排隊超過 25–30 分鐘就直接跳站；孩子疲倦時，優先保留遊行、用餐與休息。</p></>}
+        </article>
+        <div className="ride-legend">
+          <div><i className="ride-safe">抱</i><span><b>可抱著搭</b>叢林巡航、沿河鐵路、小小世界</span></div>
+          <div><i className="ride-seat">坐</i><span><b>須自行坐穩</b>美女與野獸、怪獸電力公司</span></div>
+          <div><i className="ride-height">81</i><span><b>先量身高</b>杯麵歡樂之旅至少 81 cm</span></div>
+        </div>
+      </div>
+    </div>
+    <footer className="disney-guide-foot"><span>未滿 7 歲須由 16 歲以上者陪同；最終以入口量身高及演藝人員判定為準。</span><a href="https://www.tokyodisneyresort.jp/tdr/guide/child-tdl/" target="_blank" rel="noreferrer">官方 3 歲以下指南 ↗</a></footer>
+  </section>;
+}
+
 function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" | "during" | "after" }) {
   const [snapshot, setSnapshot] = useState<WeatherSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
@@ -592,6 +678,7 @@ export default function Home() {
       <section className="day-shell">
         <div className="day-tabs" aria-label="選擇行程日期">{DAYS.map(d => <button key={d.id} className={d.id === day.id ? "active" : ""} onClick={() => setDayId(d.id)}><small>{d.dateLabel}</small><b>D{d.day}</b><span>週{d.weekday}</span></button>)}</div>
         <div className="day-header"><div><span className="eyebrow">DAY {day.day} · {day.dateLabel}（週{day.weekday}）</span><h2>{day.theme}</h2><p>{day.cityLabel}</p></div><div className="day-progress"><b>{day.stops.filter(s => completed.has(s.id)).length}/{day.stops.length}</b><span>今日完成</span></div></div>
+        {day.id === "d2" && <DisneylandFamilyMap />}
         <div className="itinerary">{day.stops.map((stop, i) => <StopCard key={stop.id} stop={stop} index={i} done={completed.has(stop.id)} onToggle={() => toggle(stop.id)}/>)}</div>
       </section>
     </>}
