@@ -1,9 +1,22 @@
-const CACHE_NAME = "tokyo-family-guide-v2-20260813-disney-family-map";
+const CACHE_NAME = "tokyo-family-guide-v3-20260813-mobile-offline-readiness";
 const APP_ROOT = "/tokyo-family-travel-guide/";
 const APP_SHELL = [APP_ROOT, `${APP_ROOT}manifest.webmanifest`, `${APP_ROOT}icon-192.png`, `${APP_ROOT}icon-512.png`];
 
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(APP_SHELL);
+    const shell = await fetch(APP_ROOT, { cache: "reload" });
+    if (shell.ok) {
+      const html = await shell.clone().text();
+      await cache.put(APP_ROOT, shell);
+      const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
+        .map(match => new URL(match[1], self.location.origin).pathname)
+        .filter(path => path.startsWith(APP_ROOT));
+      await cache.addAll([...new Set(assets)]);
+    }
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", event => {
