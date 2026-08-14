@@ -35,7 +35,7 @@ const WEATHER_LOCATIONS: Record<string, { name: string; latitude: number; longit
   d2: { name: "舞濱・浦安", latitude: 35.6329, longitude: 139.8804 },
   d3: { name: "大宮", latitude: 35.9063, longitude: 139.6238 },
   d4: { name: "水道橋・東京", latitude: 35.7020, longitude: 139.7537 },
-  d5: { name: "大森・品川", latitude: 35.5885, longitude: 139.7354 },
+  d5: { name: "品川・錦糸町", latitude: 35.6285, longitude: 139.7387 },
   d6: { name: "成田機場", latitude: 35.7720, longitude: 140.3929 },
 };
 
