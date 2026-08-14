@@ -23,9 +23,9 @@ const CHECKLIST_KEY = "tokyo-family-guide-checklist-v1";
 const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
 const DEFAULT_EXCHANGE_RATE = 0.2045;
 const JPY_RATE = 0.215;
-const AQUA_PARK_TICKETS_JPY = 5600;
-const budgetJpy = 289492 + 21800 + AQUA_PARK_TICKETS_JPY + 12000 + 150000 + AIRPORTER.totalJpy;
-const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd;
+const AQUA_PARK_TICKETS_TWD = 1168;
+const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
+const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD;
 
 const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
 const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
@@ -555,7 +555,7 @@ function Budget() {
     ["機票費用", `NT$${money(AIRFARE.total)}`, "已付款 · 皇璽桂冠艙 2 大 1 小"],
     ["住宿總計", "¥289,492", "已付款 · 希爾頓 2 晚、巨蛋 2 晚、樂天城市 1 晚"],
     ["樂園門票", "¥21,800", "已付款 · 迪士尼成人 2 位、3 歲免費"],
-    ["Aqua Park 門票", `¥${money(AQUA_PARK_TICKETS_JPY)}`, "已購票 · 成人 2 位、3 歲免費；依官方票價計入"],
+    ["Aqua Park 門票", `NT$${money(AQUA_PARK_TICKETS_TWD)}`, "已付款 · 成人票 2 張 NT$1,112 + No-show Refund NT$56"],
     ["當地交通", "¥12,000", "預估 · Skyliner、Suica / PASMO"],
     ["餐飲與購物", "¥150,000", "預估"],
     ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
