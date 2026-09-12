@@ -41,11 +41,19 @@ export default function QrVault({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    getVaultMeta().then(meta => setPhase(meta ? "locked" : "setup"))
-      .catch(error => setMessage(error instanceof Error ? error.message : "無法開啟本機保管箱"));
+    let mounted = true;
+    getVaultMeta().then(meta => { if (mounted) setPhase(meta ? "locked" : "setup"); })
+      .catch(error => { if (mounted) setMessage(error instanceof Error ? error.message : "無法開啟本機保管箱"); });
     closeRef.current?.focus();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    return () => {
+      mounted = false;
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Tab") {
         const focusable = [...(dialogRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), a[href]") || [])]
@@ -63,10 +71,7 @@ export default function QrVault({ onClose }: { onClose: () => void }) {
       }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose, viewer]);
 
   useEffect(() => () => { if (viewer) URL.revokeObjectURL(viewer.url); }, [viewer]);
