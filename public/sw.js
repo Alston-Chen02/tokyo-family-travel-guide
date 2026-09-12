@@ -1,4 +1,4 @@
-const CACHE_NAME = "tokyo-family-guide-v3-20260813-mobile-offline-readiness";
+const CACHE_NAME = "tokyo-family-guide-v4-20260913-private-qr";
 const APP_ROOT = "/tokyo-family-travel-guide/";
 const APP_SHELL = [APP_ROOT, `${APP_ROOT}manifest.webmanifest`, `${APP_ROOT}icon-192.png`, `${APP_ROOT}icon-512.png`];
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import QrVault from "./QrVault";
 import {
   AIRFARE,
   AIRPORTER,
@@ -589,9 +590,10 @@ function TravelChecklist() {
   return <div className="travel-notes"><div className="checklist-heading"><h3>出發前，從容確認。</h3><strong>{completed}/{PRETRIP_CHECKS.length}</strong></div>{PRETRIP_CHECKS.map(item => <label key={item}><input type="checkbox" checked={!!checked[item]} onChange={event => toggleCheck(item, event.target.checked)} /> {item}</label>)}</div>;
 }
 
-function Help() {
+function Help({ onOpenQr }: { onOpenQr: () => void }) {
   return <section className="content-section">
     <div className="section-heading"><span>PEACE OF MIND</span><h2>安心出發，也安心回家。</h2><p>重要聯絡、親子醫療、求助日文與旅平險，真正需要時一秒找到。</p></div>
+    <article className="visit-japan-card"><div><span className="eyebrow">PRIVATE QR · VISIT JAPAN WEB</span><h3>三位旅客的入境 QR，掃描時快速打開。</h3><p>首次請在要出示的手機匯入各自截圖並設定密碼；圖片只在該裝置加密保存，不會放到公開行程網站。</p></div><button type="button" onClick={onOpenQr}>開啟入境 QR 保管箱</button></article>
     <div className="hotline-grid">{EMERGENCY_INFO.hotlines.map(h => <a key={h.label} href={`tel:${h.number}`}><small>{h.label}</small><strong>{h.number}</strong><span>{h.label.includes("JNTO") ? "24H · 中文／英文／韓文" : "點一下，立即撥號"}</span></a>)}</div>
     <div className="medical-grid">
       <article><span className="eyebrow">NEARBY CARE</span><h3>附近兒科與急診</h3><p>依當下住宿地點開啟地圖搜尋；危急狀況直接撥 119。</p><div className="medical-links">{MEDICAL_SEARCHES.map(item => <a key={item.label} href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query)}`} target="_blank" rel="noreferrer">{item.label} ↗</a>)}</div></article>
@@ -665,6 +667,7 @@ export default function Home() {
   const [dayId, setDayId] = useState(DAYS[0].id);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [offlineReady, setOfflineReady] = useState(false);
@@ -713,7 +716,7 @@ export default function Home() {
 
   return <main>
     <header className="hero">
-      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
+      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => setQrOpen(true)} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
       <div className="hero-content"><div><p className="kicker">TOKYO · SIX DAYS TOGETHER</p><h1>東京，慢慢走。<br/><em>六日親子行旅</em></h1><p className="hero-copy">2026/09/19 — 09/24 · 兩大一小<br/>從第一班航班到最後一件行李，旅程需要的都在這裡。</p></div><div className="trip-stamp"><span>6</span><b>DAYS</b><i>5 NIGHTS</i><small>TPE ⇄ NRT</small></div></div>
       <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completed.size}/{tripTotal}</b><span>已完成 {Math.round(completed.size / tripTotal * 100)}%</span></div></div>
     </header>
@@ -732,10 +735,11 @@ export default function Home() {
     </>}
     {view === "bookings" && <Bookings/>}
     {view === "budget" && <Budget/>}
-    {view === "help" && <Help/>}
+    {view === "help" && <Help onOpenQr={() => setQrOpen(true)}/>}
 
     <footer><b>東京，慢慢走。· 2026 秋</b><span>所有原定行程與時間完整保留 · 旅途中依現場公告從容調整</span></footer>
     <CurrencyCalculator open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
+    {qrOpen && <QrVault onClose={() => setQrOpen(false)} />}
     <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
   </main>;
 }
