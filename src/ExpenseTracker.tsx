@@ -22,6 +22,7 @@ type Expense = {
   payer_share_percent: number;
   note: string;
 };
+type OcrResult = { merchant?: string; amount?: string; currency?: string; date?: string };
 
 const categoryLabels: Record<Category, string> = {
   food: "餐飲", transport: "交通", shopping: "購物", tickets: "門票", lodging: "住宿", other: "其他",
@@ -32,6 +33,27 @@ const tripToday = () => new Intl.DateTimeFormat("sv-SE", {
 }).format(new Date());
 const formatAmount = (value: number, currency: Currency) =>
   `${currency === "JPY" ? "¥" : "NT$"}${new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 2 }).format(value)}`;
+
+async function prepareReceipt(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("請選擇收據照片");
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const scale = Math.min(1, 1800 / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(image.naturalWidth * scale);
+    canvas.height = Math.round(image.naturalHeight * scale);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("此裝置無法處理照片");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    const content = dataUrl.split(",")[1];
+    if (!content || content.length > 4_000_000) throw new Error("照片仍超過 3 MB，請換一張較小的照片");
+    return content;
+  } finally { URL.revokeObjectURL(url); }
+}
 
 export default function ExpenseTracker() {
   const [session, setSession] = useState<Session | null>(null);
@@ -50,6 +72,9 @@ export default function ExpenseTracker() {
   const [sharing, setSharing] = useState<Sharing>("shared");
   const [payerShare, setPayerShare] = useState(50);
   const [note, setNote] = useState("");
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState("");
 
   const refresh = useCallback(async () => {
     const [memberResult, expenseResult] = await Promise.all([
@@ -128,6 +153,28 @@ export default function ExpenseTracker() {
     else { setMerchant(""); setAmount(""); setNote(""); await refresh(); }
   };
 
+  const recognizeReceipt = async () => {
+    if (!receipt || !me) return;
+    setOcrBusy(true);
+    setOcrStatus("正在辨識收據，請稍候…");
+    try {
+      const content = await prepareReceipt(receipt);
+      const { data, error } = await supabase.functions.invoke<OcrResult>("receipt-ocr", {
+        body: { content, mimeType: "image/jpeg" },
+      });
+      if (error) throw error;
+      if (!data) throw new Error("未收到辨識結果");
+      if (data.merchant) setMerchant(data.merchant.slice(0, 120));
+      if (data.amount && /^\d+(?:\.\d{1,2})?$/.test(data.amount)) setAmount(data.amount);
+      if (data.date) setDate(data.date);
+      if (data.currency === "JPY" || data.currency === "TWD") setCurrency(data.currency);
+      setOcrStatus("辨識完成。請核對日期、店家、金額、幣別及分帳方式，再按「儲存這筆支出」。照片不會保存在旅費資料庫。");
+      setReceipt(null);
+    } catch {
+      setOcrStatus("無法辨識這張收據；請重試或直接手動輸入。");
+    } finally { setOcrBusy(false); }
+  };
+
   const remove = async (expense: Expense) => {
     if (!window.confirm(`刪除「${expense.merchant}」這筆支出？`)) return;
     setBusy(true);
@@ -143,7 +190,7 @@ export default function ExpenseTracker() {
       <div className="expense-session"><span>已登入：{me?.display_name || session.user.email || "旅程成員"}</span><button type="button" onClick={() => { void supabase.auth.signOut(); }}>登出</button></div>
       {loading ? <p>讀取記帳資料中…</p> : !me ? <div className="expense-panel"><p>此帳號尚未列入旅程成員，無法查看或新增支出。請先由管理者在 Supabase 指定兩位成員。</p></div> : <>
         <div className="expense-summary">{(["JPY", "TWD"] as Currency[]).map(unit => <article key={unit}><small>{unit} · 本次記錄</small><b>{formatAmount(totals[unit].shared, unit)}</b><span>共用支出</span><p>我的私人支出 {formatAmount(totals[unit].private, unit)}</p>{other && <p>{Math.abs(totals[unit].net) < 0.005 ? "目前無須分帳" : totals[unit].net > 0 ? `${other.display_name} 應付我 ${formatAmount(totals[unit].net, unit)}` : `我應付 ${other.display_name} ${formatAmount(-totals[unit].net, unit)}`}</p>}</article>)}</div>
-        <div className="expense-layout"><form className="expense-panel expense-form" onSubmit={save}><h3>新增支出</h3><div className="expense-fields"><label>日期<input type="date" required value={date} onChange={event => setDate(event.target.value)} /></label><label>店家／用途<input required maxLength={120} value={merchant} onChange={event => setMerchant(event.target.value)} placeholder="例如：午餐" /></label><label>金額<input type="number" inputMode="decimal" min="0.01" step="0.01" required value={amount} onChange={event => setAmount(event.target.value)} /></label><label>幣別<select value={currency} onChange={event => setCurrency(event.target.value as Currency)}><option value="JPY">日圓 JPY</option><option value="TWD">台幣 TWD</option></select></label><label>分類<select value={category} onChange={event => setCategory(event.target.value as Category)}>{categories.map(key => <option key={key} value={key}>{categoryLabels[key]}</option>)}</select></label><label>用途<select value={sharing} onChange={event => setSharing(event.target.value as Sharing)}><option value="shared">共用 · 後續分帳</option><option value="private">私人 · 僅自己可見</option></select></label>{sharing === "shared" && <label>我負擔比例：{payerShare}%<input type="range" min="0" max="100" step="5" value={payerShare} onChange={event => setPayerShare(Number(event.target.value))} /><small>另一位負擔 {100 - payerShare}%</small></label>}<label className="expense-wide">備註<input maxLength={500} value={note} onChange={event => setNote(event.target.value)} /></label></div><p className="expense-ocr-note">收據拍照辨識將於 Google Cloud 完成設定後啟用；目前可直接手動輸入。</p><button disabled={busy} type="submit">{busy ? "儲存中…" : "儲存這筆支出"}</button></form>
+        <div className="expense-layout"><form className="expense-panel expense-form" onSubmit={save}><h3>新增支出</h3><div className="expense-ocr"><label>拍攝或選擇收據照片<input type="file" accept="image/*" capture="environment" onChange={event => { setReceipt(event.target.files?.[0] || null); setOcrStatus(""); }} /></label><button type="button" disabled={!receipt || ocrBusy || busy} onClick={() => { void recognizeReceipt(); }}>{ocrBusy ? "辨識中…" : "辨識收據並填入"}</button><p>照片會傳送至 Google Document AI 辨識，可能產生費用；不會儲存在旅費資料庫。也可不拍照，直接手動填寫。</p>{ocrStatus && <p role="status">{ocrStatus}</p>}</div><div className="expense-fields"><label>日期<input type="date" required value={date} onChange={event => setDate(event.target.value)} /></label><label>店家／用途<input required maxLength={120} value={merchant} onChange={event => setMerchant(event.target.value)} placeholder="例如：午餐" /></label><label>金額<input type="number" inputMode="decimal" min="0.01" step="0.01" required value={amount} onChange={event => setAmount(event.target.value)} /></label><label>幣別<select value={currency} onChange={event => setCurrency(event.target.value as Currency)}><option value="JPY">日圓 JPY</option><option value="TWD">台幣 TWD</option></select></label><label>分類<select value={category} onChange={event => setCategory(event.target.value as Category)}>{categories.map(key => <option key={key} value={key}>{categoryLabels[key]}</option>)}</select></label><label>用途<select value={sharing} onChange={event => setSharing(event.target.value as Sharing)}><option value="shared">共用 · 後續分帳</option><option value="private">私人 · 僅自己可見</option></select></label>{sharing === "shared" && <label>我負擔比例：{payerShare}%<input type="range" min="0" max="100" step="5" value={payerShare} onChange={event => setPayerShare(Number(event.target.value))} /><small>另一位負擔 {100 - payerShare}%</small></label>}<label className="expense-wide">備註<input maxLength={500} value={note} onChange={event => setNote(event.target.value)} /></label></div><button disabled={busy || ocrBusy} type="submit">{busy ? "儲存中…" : "儲存這筆支出"}</button></form>
           <div className="expense-panel"><h3>支出明細</h3>{expenses.length === 0 ? <p>目前沒有支出記錄。</p> : <ul className="expense-list">{expenses.map(expense => <li key={expense.id}><div><small>{expense.occurred_on} · {categoryLabels[expense.category]} · {expense.sharing === "shared" ? "共用" : "私人"}</small><b>{expense.merchant}</b><span>{members.find(member => member.user_id === expense.created_by)?.display_name || "我"}{expense.note ? ` · ${expense.note}` : ""}</span></div><strong>{formatAmount(expense.amount, expense.currency)}</strong>{expense.created_by === me.user_id && <button type="button" disabled={busy} onClick={() => { void remove(expense); }} aria-label={`刪除 ${expense.merchant} 支出`}>刪除</button>}</li>)}</ul>}</div></div>
         <div className="expense-categories"><h3>我可見的支出分類</h3><p>包含共用支出與自己的私人支出。</p>{(["JPY", "TWD"] as Currency[]).map(unit => <div key={unit}><small>{unit}</small>{categories.filter(key => totals[unit].byCategory[key] > 0).map(key => <span key={key}>{categoryLabels[key]} {formatAmount(totals[unit].byCategory[key], unit)}</span>)}</div>)}</div>
       </>}
