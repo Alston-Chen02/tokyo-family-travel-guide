@@ -293,6 +293,53 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .budget-grid b { margin-top: 10px; font-family: serif; font-size: 24px; }
 .budget-grid small { margin-top: auto; color: #8b928d; font-size: 9px; line-height: 1.5; }
 
+.expense-ledger { margin-top: 68px; }
+.expense-panel { padding: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.expense-panel h3, .expense-categories h3 { margin: 0 0 16px; font-family: var(--font-serif); font-size: 23px; }
+.expense-panel p, .expense-session, .expense-categories { color: #58645c; font-size: 12px; line-height: 1.7; }
+.expense-panel button[type="submit"] { padding: 12px 18px; border: 0; border-radius: 8px; background: var(--ink); color: white; font-weight: 700; cursor: pointer; }
+.expense-form > button[type="submit"] { display: block; margin-top: 16px; min-height: 48px; }
+.expense-panel button:disabled { opacity: .55; cursor: wait; }
+.expense-login { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+.expense-login label { flex: 1 1 240px; }
+.expense-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.expense-fields label, .expense-login label { display: flex; flex-direction: column; gap: 5px; color: #59635d; font-size: 11px; font-weight: 700; }
+.expense-fields input, .expense-fields select, .expense-login input { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #bdc6bc; border-radius: 7px; background: white; color: var(--ink); font: inherit; font-size: 14px; }
+.expense-fields input[type="range"] { padding: 6px 0; }
+.expense-fields label small { font-weight: 400; }
+.expense-wide { grid-column: 1 / -1; }
+.expense-session { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.expense-session button, .expense-list button { border: 0; background: none; color: var(--red); cursor: pointer; font-weight: 700; }
+.expense-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.expense-summary article { display: flex; flex-direction: column; padding: 21px; border-radius: 12px; background: #e9eee8; }
+.expense-summary small { color: #607167; }
+.expense-summary b { margin-top: 6px; font-family: var(--font-serif); font-size: 30px; }
+.expense-summary span, .expense-summary p { margin: 0; color: #59665e; font-size: 11px; }
+.expense-summary p { margin-top: 8px; }
+.expense-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.expense-ocr { margin: 0 0 18px; padding: 14px; border-radius: 7px; background: #f5e9d2; }
+.expense-ocr label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; }
+.expense-ocr input { max-width: 100%; font-size: 12px; }
+.expense-ocr button { margin-top: 10px; padding: 10px 14px; border: 0; border-radius: 7px; background: var(--ink); color: white; font-weight: 700; cursor: pointer; }
+.expense-ocr p { margin: 8px 0 0; }
+.expense-list { list-style: none; margin: 0; padding: 0; }
+.expense-list li { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.expense-list li > div { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.expense-list li small, .expense-list li span { color: #778178; font-size: 10px; }
+.expense-list li b, .expense-list li strong { font-size: 13px; }
+.expense-list li strong { white-space: nowrap; }
+.expense-categories { margin-top: 15px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; }
+.expense-categories > div { display: flex; gap: 12px; flex-wrap: wrap; margin: 6px 0; }
+.expense-categories > div small { min-width: 30px; font-weight: 700; }
+.expense-message { padding: 12px; border-radius: 8px; background: #f9e6e2; color: #8a2d25; }
+@media (max-width: 700px) {
+  .expense-ledger { margin-top: 48px; }
+  .expense-layout, .expense-summary { grid-template-columns: 1fr; }
+  .expense-fields { grid-template-columns: 1fr; }
+  .expense-panel { padding: 17px; }
+  .expense-form > button[type="submit"] { width: 100%; }
+}
+
 .hotline-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .hotline-grid a { display: flex; flex-direction: column; padding: 24px; border-radius: 12px; background: #9e493d; color: white; text-decoration: none; box-shadow: 0 10px 24px rgba(86,41,35,.12); }
 .hotline-grid a:nth-child(2) { background: #7e3d35; }
