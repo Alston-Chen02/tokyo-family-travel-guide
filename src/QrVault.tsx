@@ -84,8 +84,8 @@ export default function QrVault({ onClose }: { onClose: () => void }) {
   const submitPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy) return;
-    if (phase === "setup" && (password.length < 12 || password !== confirmation)) {
-      setMessage(password.length < 12 ? "密碼至少需要 12 個字元" : "兩次輸入的密碼不一致");
+    if (phase === "setup" && (password.length < 4 || password !== confirmation)) {
+      setMessage(password.length < 4 ? "密碼至少需要 4 個字元" : "兩次輸入的密碼不一致");
       return;
     }
     setBusy(true);
@@ -182,7 +182,7 @@ export default function QrVault({ onClose }: { onClose: () => void }) {
         <img src={viewer.url} alt={`${entries[viewer.slot]?.name || `旅客 ${viewer.slot}`} 的入境審查及海關申報 QR 圖片`} />
         <div className="qr-viewer-actions"><button type="button" onClick={() => setViewer(null)}>返回旅客清單</button><button type="button" onClick={onClose}>掃描完成 · 鎖定</button></div>
       </div> : <>
-        <p className="qr-privacy">QR 圖片與姓名以密碼加密後只存在此裝置的瀏覽器，不會寫入公開網站或同步至其他裝置。關閉後需重新輸入密碼；若清除瀏覽器資料或忘記密碼，需重新匯入原始截圖。這批橫式 Visit Japan Web 截圖會自動裁切中央 QR，匯入後請逐張放大確認完整可掃描，並保留官方網站或原始截圖作備份。</p>
+        <p className="qr-privacy">QR 圖片與姓名以密碼加密後只存在此裝置的瀏覽器，不會寫入公開網站或同步至其他裝置。密碼至少 4 個字元；短密碼較容易被猜出，建議使用更長的密碼並啟用手機螢幕鎖。關閉後需重新輸入密碼；若清除瀏覽器資料或忘記密碼，需重新匯入原始截圖。這批橫式 Visit Japan Web 截圖會自動裁切中央 QR，匯入後請逐張放大確認完整可掃描，並保留官方網站或原始截圖作備份。</p>
         {phase === "loading" ? <p>正在檢查本機保管箱…</p> : phase === "ready" ? <>
           <div className="qr-slots">{QR_SLOTS.map(slot => <article key={slot}>
             <div><b>旅客 {slot}</b><span>{entries[slot] ? "已儲存 · 可離線顯示" : "尚未匯入"}</span></div>
@@ -196,7 +196,7 @@ export default function QrVault({ onClose }: { onClose: () => void }) {
           <button type="button" className="qr-reset" disabled={busy} onClick={() => void clearAll()}>忘記密碼／清除此裝置的 QR</button>
         </> : <form className="qr-password-form" onSubmit={event => void submitPassword(event)}>
           <h3>{phase === "setup" ? "設定這台裝置的 QR 密碼" : "輸入密碼以開啟 QR"}</h3>
-          <label>密碼<input type="password" autoComplete={phase === "setup" ? "new-password" : "current-password"} required minLength={phase === "setup" ? 12 : undefined} value={password} onChange={event => setPassword(event.target.value)} /></label>
+          <label>密碼<input type="password" autoComplete={phase === "setup" ? "new-password" : "current-password"} required minLength={phase === "setup" ? 4 : undefined} value={password} onChange={event => setPassword(event.target.value)} /></label>
           {phase === "setup" && <label>再次輸入密碼<input type="password" autoComplete="new-password" required value={confirmation} onChange={event => setConfirmation(event.target.value)} /></label>}
           <button type="submit" disabled={busy}>{busy ? "處理中…" : phase === "setup" ? "設定密碼並開始匯入" : "解鎖 QR"}</button>
           {phase === "locked" && <button type="button" className="qr-reset" disabled={busy} onClick={() => void clearAll()}>忘記密碼？清除此裝置的 QR 並重設</button>}
