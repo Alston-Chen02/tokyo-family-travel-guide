@@ -302,6 +302,9 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .expense-panel button:disabled { opacity: .55; cursor: wait; }
 .expense-login { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
 .expense-login label { flex: 1 1 240px; }
+.expense-login-link { margin-top: 16px; padding: 16px; border-radius: 8px; background: #e9eee8; }
+.expense-login-link p { margin: 0 0 12px; }
+.expense-login-link p:last-child { margin: 12px 0 0; }
 .expense-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .expense-fields label, .expense-login label { display: flex; flex-direction: column; gap: 5px; color: #59635d; font-size: 11px; font-weight: 700; }
 .expense-fields input, .expense-fields select, .expense-login input { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #bdc6bc; border-radius: 7px; background: white; color: var(--ink); font: inherit; font-size: 14px; }
@@ -317,11 +320,6 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .expense-summary span, .expense-summary p { margin: 0; color: #59665e; font-size: 11px; }
 .expense-summary p { margin-top: 8px; }
 .expense-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
-.expense-ocr { margin: 0 0 18px; padding: 14px; border-radius: 7px; background: #f5e9d2; }
-.expense-ocr label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; }
-.expense-ocr input { max-width: 100%; font-size: 12px; }
-.expense-ocr button { margin-top: 10px; padding: 10px 14px; border: 0; border-radius: 7px; background: var(--ink); color: white; font-weight: 700; cursor: pointer; }
-.expense-ocr p { margin: 8px 0 0; }
 .expense-list { list-style: none; margin: 0; padding: 0; }
 .expense-list li { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
 .expense-list li > div { min-width: 0; flex: 1; display: flex; flex-direction: column; }
@@ -337,6 +335,7 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
   .expense-layout, .expense-summary { grid-template-columns: 1fr; }
   .expense-fields { grid-template-columns: 1fr; }
   .expense-panel { padding: 17px; }
+  .expense-login button { width: 100%; min-height: 48px; }
   .expense-form > button[type="submit"] { width: 100%; }
 }
 

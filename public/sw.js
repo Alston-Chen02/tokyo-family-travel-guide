@@ -1,4 +1,4 @@
-const CACHE_NAME = "tokyo-family-guide-v13-20260913-expense-button";
+const CACHE_NAME = "tokyo-family-guide-v14-20260913-manual-expense-login";
 const APP_ROOT = "/tokyo-family-travel-guide/";
 const APP_SHELL = [APP_ROOT, `${APP_ROOT}manifest.webmanifest`, `${APP_ROOT}icon-192.png`, `${APP_ROOT}icon-512.png`];
 
