@@ -1,59 +1,47 @@
-# Expense ledger and receipt OCR setup (candidate only)
+# Expense ledger setup and use
 
-This feature is **not live** merely because the website builds. Do not merge
-until the database, Auth, and two-account privacy tests have passed.
+The live ledger uses the existing `Tokyo-family-travel-expenses` Supabase project.
+Its two-member database allowlist and RLS policies are defined in
+`supabase/migrations/202609130001_expense_ledger.sql`. Do not rerun the migration
+against a populated project without reviewing its effects first.
 
-1. In the existing `Tokyo-family-travel-expenses` Supabase project, review and
-   run `supabase/migrations/202609130001_expense_ledger.sql` once. This creates
-   an allowlisted two-person ledger with RLS. Anonymous visitors cannot read
-   or write the new tables. Private expenses are visible only to their creator.
-2. Under Authentication, create or invite the two adults' Auth accounts. The
-   frontend intentionally uses `shouldCreateUser: false`, so a public visitor
-   cannot sign themselves up through the guide.
-3. Add the guide's exact GitHub Pages URL to Supabase Authentication > URL
-   Configuration > Redirect URLs. Also add the local development URL when
-   testing locally. The email sign-in link must return to an allowed URL.
-4. After each adult has an Auth UUID, add **only those two UUIDs** to
-   `public.trip_members` via the SQL Editor, with their preferred display
-   names. Do not put their emails or UUIDs in the repository. Only an enrolled
-   account can access expense rows. The ledger refreshes immediately after a
-   local save and every 15 seconds while the page is visible on another device.
-5. Test both accounts separately. Check shared expense visibility and 50/50
-   settlement; adjustable split; private expense invisibility to the other
-   account; anonymous access denial; own-row delete restriction and denied
-   updates; JPY and
-   TWD separate totals; refresh on both phones; and offline failure messaging.
-6. In Google Cloud project `project-04326e30-dccb-453b-bc7`, use the
-   `Tokyo-Travel-Receipts` Expense Parser in `asia-southeast1`. The Edge
-   Function expects the least-privilege service account for this processor.
-   Store its complete JSON **only** as Supabase Edge Function secret
-   `GOOGLE_SERVICE_ACCOUNT_JSON`; never paste it into chat, a GitHub
-   secret, website source, local `.env` in the repo, or the browser bundle.
-   Keep the original downloaded key in a secure private location and rotate
-   it if ever exposed. Deploy `supabase/functions/receipt-ocr` with JWT
-   verification enabled. The function checks the authenticated user's
-   membership via RLS before processing a photo. Receipt photos are sent to
-   Google Document AI only after the user presses the recognition button;
-   neither the image nor full OCR text is stored in Supabase. OCR only fills
-   the editable form, never inserts an expense.
-7. Check Google Cloud billing and budget alerts before any live OCR test.
-   The trial credit is not an automatic hard spending cap. Test with a
-   non-sensitive sample receipt first, then review extracted amount, currency,
-   date, and merchant manually. Confirm the function rejects anonymous and
-   non-member calls, oversized or non-image input, and a missing secret.
-8. Check desktop and mobile Chrome layouts and PWA update behavior. Test a
-   member's manual save, classification, shared/private visibility, deletion,
-   two-person settlement, and receipt review. Because this release adds no
-   public URL buttons, no unchanged site-wide link sweep is required.
+## Signing in from a home-screen app
 
-The service-account key has not been added to this candidate or deployed by
-committing code. The website build alone cannot make OCR functional.
+The current Supabase default sign-in email contains a magic link, not a numeric
+code. Its email template cannot be edited in this project without configuring
+custom SMTP. The guide therefore keeps the default template and offers a
+paste-link flow that completes sign-in **inside the installed app**:
 
-The Supabase URL and **publishable** key are embedded in the browser bundle;
-they are public identifiers, not authorization. RLS and the member allowlist
-are the security boundary. Never put a Supabase secret/service-role key,
-database password, or Google service-account credential in this repository or
-browser bundle.
+1. Open the guide from the home-screen icon and request a sign-in email using
+   an enrolled member address.
+2. In the email app, **copy** the `Sign in` link without opening it.
+3. Return to the home-screen guide, paste the link, and press
+   `在此完成登入`. The app accepts only this project's Supabase verification URL
+   and exchanges its one-time token with Supabase Auth. It does not navigate to
+   the link or save it in the expense database.
+4. The Supabase browser client persists and refreshes the resulting session in
+   that app's local storage. A new email is **not** required on each launch.
+   Sign-out, cleared site data, revoked credentials, or an expired/invalidated
+   session will require signing in again. Browser and installed-app storage may
+   be separate, so signing in through the browser does not reliably sign in
+   the home-screen app.
 
-Existing fixed trip-budget numbers are informational and are not inserted into
-the actual expense ledger.
+Treat the email link like a temporary password: do not share it or paste it in
+chat. If already opened, request a fresh link. The `shouldCreateUser: false`
+setting prevents visitors from creating accounts through the guide.
+
+## Expense data and removed OCR
+
+The form now requires manual entry of date, merchant/purpose, amount, currency,
+category, sharing type, split, and optional note. It retains the two-person
+shared/private RLS boundaries and JPY/TWD separate totals. No receipt image is
+collected or sent to Google Document AI by the guide.
+
+After the revised website is approved and published, remove the obsolete
+`receipt-ocr` Edge Function and `GOOGLE_SERVICE_ACCOUNT_JSON` Edge Function
+secret from this exact Supabase project. Do **not** delete the underlying
+Google Cloud processor or downloaded key as part of this website change.
+
+For QA, test one member's manual save and session persistence in the installed
+app, and use both adults' accounts to test private expense isolation and shared
+settlement. Do not leave QA expenses in production.
