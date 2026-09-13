@@ -52,7 +52,11 @@ function tokenFromSignInLink(value: string): { token_hash: string; type: "email"
 
 export default function ExpenseTracker() {
   const [session, setSession] = useState<Session | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [loginLink, setLoginLink] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
@@ -86,9 +90,15 @@ export default function ExpenseTracker() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
-    return () => listener.subscription.unsubscribe();
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) { setSession(data.session); setSessionReady(true); }
+    }).catch(() => { if (mounted) setSessionReady(true); });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next);
+      setSessionReady(true);
+    });
+    return () => { mounted = false; listener.subscription.unsubscribe(); };
   }, []);
   useEffect(() => {
     if (!session) { setMembers([]); setExpenses([]); setLoading(false); return; }
@@ -130,6 +140,25 @@ export default function ExpenseTracker() {
     setBusy(false);
     if (error) setMessage(`登入信寄送失敗：${error.message}`);
     else setSent(true);
+  };
+
+  const signInWithPassword = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true); setMessage("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setPassword("");
+    setBusy(false);
+    if (error) setMessage(`密碼登入失敗：${error.message}`);
+  };
+
+  const setSignInPassword = async (event: FormEvent) => {
+    event.preventDefault();
+    if (newPassword.length < 12) return;
+    setBusy(true); setPasswordMessage("");
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setNewPassword("");
+    setBusy(false);
+    setPasswordMessage(error ? `設定密碼失敗：${error.message}` : "登入密碼已設定。下次可直接在主畫面 App 以電子郵件和密碼登入，無須收信。");
   };
 
   const completeSignIn = async (event: FormEvent) => {
@@ -174,8 +203,19 @@ export default function ExpenseTracker() {
 
   return <section className="expense-ledger" aria-label="即時旅費記帳">
     <div className="section-heading compact"><span>LIVE EXPENSES</span><h2>旅途中，隨手記下每一筆。</h2><p>實際支出與上方旅程預算分開計算。資料同步至 Supabase。</p></div>
-    {!session ? <div className="expense-panel"><h3>登入後開始記帳</h3><p>只需在這個主畫面 App 完成首次登入；之後會保留登入狀態，除非登出、清除網站資料或登入狀態失效。</p><form className="expense-login" onSubmit={sendLink}><label>電子郵件<input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} /></label><button disabled={busy} type="submit">{busy ? "寄送中…" : "寄送登入連結"}</button></form>{sent && <div className="expense-login-link"><p role="status">登入信已寄出。在信件中長按「Sign in」複製連結，回到這個主畫面 App 貼上；請不要先點開連結。</p><form className="expense-login" onSubmit={completeSignIn}><label>貼上信件中的登入連結<input type="password" autoComplete="off" spellCheck={false} required value={loginLink} onChange={event => setLoginLink(event.target.value)} /></label><button disabled={busy} type="submit">{busy ? "驗證中…" : "在此完成登入"}</button></form><p>登入連結相當於一次性密碼，請勿分享。若已點開連結，請重新寄送一封。</p></div>}</div> : <>
+    {!sessionReady ? <div className="expense-panel"><p role="status">正在確認登入狀態…</p></div> : !session ? <div className="expense-panel"><h3>登入後開始記帳</h3><p>兩位旅程成員可直接在這個主畫面 App 以密碼登入；登入後會保留狀態，記帳資料持續同步。</p>
+      <form className="expense-login" onSubmit={signInWithPassword}>
+        <label>電子郵件<input type="email" autoComplete="username" required value={email} onChange={event => setEmail(event.target.value)} /></label>
+        <label>登入密碼<input type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} /></label>
+        <button disabled={busy} type="submit">{busy ? "登入中…" : "以密碼登入"}</button>
+      </form>
+      <details className="expense-login-fallback"><summary>尚未設定密碼？使用登入信</summary><p>先以原有登入信登入一次，再於記帳頁設定密碼。內建寄信有配額限制，請勿連續重寄。</p>
+        <form className="expense-login" onSubmit={sendLink}><label>電子郵件<input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} /></label><button disabled={busy} type="submit">{busy ? "寄送中…" : "寄送登入連結"}</button></form>
+        {sent && <div className="expense-login-link"><p role="status">登入信已寄出。在信件中長按「Sign in」複製連結，回到這個主畫面 App 貼上；請不要先點開連結。</p><form className="expense-login" onSubmit={completeSignIn}><label>貼上信件中的登入連結<input type="password" autoComplete="off" spellCheck={false} required value={loginLink} onChange={event => setLoginLink(event.target.value)} /></label><button disabled={busy} type="submit">{busy ? "驗證中…" : "在此完成登入"}</button></form><p>登入連結相當於一次性密碼，請勿分享。若已點開連結，請重新寄送一封。</p></div>}
+      </details>
+    </div> : <>
       <div className="expense-session"><span>已登入：{me?.display_name || session.user.email || "旅程成員"}</span><button type="button" onClick={() => { void supabase.auth.signOut({ scope: "local" }); }}>登出此裝置</button></div>
+      <details className="expense-password-settings"><summary>設定或更換登入密碼</summary><p>每位成員各自設定至少 12 字元的密碼。密碼只傳送至 Supabase Auth，不會儲存於支出資料或本網站程式。</p><form className="expense-login" onSubmit={setSignInPassword}><label>新密碼<input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={event => setNewPassword(event.target.value)} /></label><button disabled={busy} type="submit">{busy ? "設定中…" : "儲存登入密碼"}</button></form>{passwordMessage && <p role="status">{passwordMessage}</p>}</details>
       {loading ? <p>讀取記帳資料中…</p> : !me ? <div className="expense-panel"><p>此帳號尚未列入旅程成員，無法查看或新增支出。請先由管理者在 Supabase 指定兩位成員。</p></div> : <>
         <div className="expense-summary">{(["JPY", "TWD"] as Currency[]).map(unit => <article key={unit}><small>{unit} · 本次記錄</small><b>{formatAmount(totals[unit].shared, unit)}</b><span>共用支出</span><p>我的私人支出 {formatAmount(totals[unit].private, unit)}</p>{other && <p>{Math.abs(totals[unit].net) < 0.005 ? "目前無須分帳" : totals[unit].net > 0 ? `${other.display_name} 應付我 ${formatAmount(totals[unit].net, unit)}` : `我應付 ${other.display_name} ${formatAmount(-totals[unit].net, unit)}`}</p>}</article>)}</div>
         <div className="expense-layout"><form className="expense-panel expense-form" onSubmit={save}><h3>新增支出</h3><p>手動輸入日期、店家與金額後即可儲存；已移除收據拍照辨識。</p><div className="expense-fields"><label>日期<input type="date" required value={date} onChange={event => setDate(event.target.value)} /></label><label>店家／用途<input required maxLength={120} value={merchant} onChange={event => setMerchant(event.target.value)} placeholder="例如：午餐" /></label><label>金額<input type="number" inputMode="decimal" min="0.01" step="0.01" required value={amount} onChange={event => setAmount(event.target.value)} /></label><label>幣別<select value={currency} onChange={event => setCurrency(event.target.value as Currency)}><option value="JPY">日圓 JPY</option><option value="TWD">台幣 TWD</option></select></label><label>分類<select value={category} onChange={event => setCategory(event.target.value as Category)}>{categories.map(key => <option key={key} value={key}>{categoryLabels[key]}</option>)}</select></label><label>用途<select value={sharing} onChange={event => setSharing(event.target.value as Sharing)}><option value="shared">共用 · 後續分帳</option><option value="private">私人 · 僅自己可見</option></select></label>{sharing === "shared" && <label>我負擔比例：{payerShare}%<input type="range" min="0" max="100" step="5" value={payerShare} onChange={event => setPayerShare(Number(event.target.value))} /><small>另一位負擔 {100 - payerShare}%</small></label>}<label className="expense-wide">備註<input maxLength={500} value={note} onChange={event => setNote(event.target.value)} /></label></div><button disabled={busy} type="submit">{busy ? "儲存中…" : "儲存這筆支出"}</button></form>
