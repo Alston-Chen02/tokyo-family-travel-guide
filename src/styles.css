@@ -312,6 +312,8 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .expense-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .expense-fields label, .expense-login label { display: flex; flex-direction: column; gap: 5px; color: #59635d; font-size: 11px; font-weight: 700; }
 .expense-fields input, .expense-fields select, .expense-login input { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #bdc6bc; border-radius: 7px; background: white; color: var(--ink); font: inherit; font-size: 14px; }
+.expense-fields input[type="date"] { text-align: left; min-height: 44px; }
+.expense-fields input[type="date"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
 .expense-fields input[type="range"] { padding: 6px 0; }
 .expense-fields label small { font-weight: 400; }
 .expense-wide { grid-column: 1 / -1; }
