@@ -1,0 +1,4 @@
+interface:
+  display_name: "旅遊指南安全上版"
+  short_description: "完整執行旅遊指南建置、部署與桌機手機正式站驗收流程"
+  default_prompt: "Use $publish-travel-guide to safely publish and verify the digital travel guide."
