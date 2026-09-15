@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import InsuranceGuide from "./InsuranceGuide";
 import QrVault from "./QrVault";
 import ExpenseTracker from "./ExpenseTracker";
+import TyphoonTracker from "./TyphoonTracker";
 import {
   AIRFARE,
   TRAVEL_INSURANCE,
@@ -19,7 +20,7 @@ import {
   type ItineraryStop,
 } from "./data";
 
-type View = "schedule" | "bookings" | "budget" | "help";
+type View = "schedule" | "bookings" | "budget" | "typhoon" | "help";
 
 const STORAGE_KEY = "tokyo-family-guide-progress-v2";
 const PRIVATE_VAULT_KEY = "tokyo-family-guide-private-vault-v1";
@@ -726,7 +727,7 @@ export default function Home() {
       <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completed.size}/{tripTotal}</b><span>已完成 {Math.round(completed.size / tripTotal * 100)}%</span></div></div>
     </header>
 
-    <div className="desktop-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}>每日行程</button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}>旅宿與行李</button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}>旅費筆記</button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}>安心資訊</button></div>
+    <div className="desktop-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}>每日行程</button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}>旅宿與行李</button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}>旅費筆記</button><button className={view === "typhoon" ? "active" : ""} onClick={() => switchView("typhoon")}>颱風動態</button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}>安心資訊</button></div>
 
     {view === "schedule" && <>
       <TodayPanel day={todayDay} nextStop={nextStop} mode={tripMode} onOpenDay={openToday} installPrompt={installPrompt} onInstall={install} offlineReady={offlineReady} />
@@ -740,11 +741,12 @@ export default function Home() {
     </>}
     {view === "bookings" && <Bookings/>}
     {view === "budget" && <Budget/>}
+    {view === "typhoon" && <TyphoonTracker/>}
     {view === "help" && <Help onOpenQr={() => setQrOpen(true)}/>}
 
     <footer><b>東京，慢慢走。· 2026 秋</b><span>所有原定行程與時間完整保留 · 旅途中依現場公告從容調整</span></footer>
     <CurrencyCalculator open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
     {qrOpen && <QrVault onClose={() => setQrOpen(false)} />}
-    <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
+    <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "typhoon" ? "active" : ""} onClick={() => switchView("typhoon")}><i>風</i><span>颱風</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
   </main>;
 }
