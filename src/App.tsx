@@ -605,7 +605,7 @@ function Help({ onOpenQr }: { onOpenQr: () => void }) {
       <article><span className="eyebrow">SHOW THIS SCREEN</span><h3>親子求助日文</h3><dl className="phrase-list">{EMERGENCY_PHRASES.map(item => <div key={item.zh}><dt>{item.zh}</dt><dd lang="ja">{item.jp}</dd></div>)}</dl></article>
     </div>
     <InsuranceGuide />
-    <div className="backup-plans"><h3>行程卡住時，照這個順序。</h3><div><b>交通延誤</b><p>先保留住宿與已預約票券；購物與非指定時間景點優先刪除。用官方 App／站務員確認替代線，必要時直接叫車。</p></div><div><b>孩子不舒服</b><p>回最近飯店休息 → JNTO 中文熱線協助找醫療 → 有呼吸困難、意識不清或嚴重過敏直接 119。</p></div><div><b>班機／回程異動</b><p>先聯絡長榮與接送司機，再通知保險公司；保留延誤證明、收據與 App 截圖。</p></div><div><b>護照／手機遺失</b><p>先警局報案並留存受理號碼 → 聯絡駐日代表處／電信業者 → 更改重要帳號密碼與凍結行動支付。</p></div><div><b>地震／颱風</b><p>先依飯店、車站與場館廣播就地避難，避免搭電梯；保留電力，再透過 JNTO 與官方防災資訊確認後續交通。</p></div></div>
+    <div className="backup-plans"><h3>行程卡住時，照這個順序。</h3><div><b>交通延誤</b><p>先保留住宿與已預約票券；購物與非指定時間景點優先刪除。用官方 App／站務員確認替代線，必要時直接叫車。</p></div><div><b>孩子不舒服</b><p>回最近飯店休息 → JNTO 中文熱線協助找醫療 → 有呼吸困難、意識不清或嚴重過敏直接 119。</p></div><div><b>班機／回程異動</b><p>先聯絡長榮與接送司機，再通知保險公司；保留原定與實際起飛時間、航空公司延誤／取消證明、登機證及新增交通住宿收據。若滯留超過保期，立即申請延長。</p></div><div><b>護照／手機遺失</b><p>先警局報案並留存受理號碼 → 聯絡駐日代表處／電信業者 → 更改重要帳號密碼與凍結行動支付。</p></div><div><b>地震／颱風</b><p>先依飯店、車站與場館廣播就地避難，避免搭電梯；保留電力，再透過 JNTO 與官方防災資訊確認後續交通。</p></div></div>
     <TravelChecklist />
   </section>;
 }

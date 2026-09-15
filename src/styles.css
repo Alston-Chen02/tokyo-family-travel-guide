@@ -655,6 +655,13 @@ footer b { color: white; }
 .insurance-benefits article { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .insurance-benefits h4 { margin: 0 0 6px; color: #7c3e34; }
 .insurance-benefits p { margin: 0; font-size: 13px; }
+.typhoon-guide { margin: 28px 0; padding: 22px; border-radius: 14px; background: #eef3f5; }
+.typhoon-guide h3 { margin-top: 7px; }
+.typhoon-guide article { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 13px 0; border-bottom: 1px solid #d2dce0; }
+.typhoon-guide article > b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #315d6b; color: white; }
+.typhoon-guide article p, .typhoon-guide article span { display: block; margin: 0; }
+.typhoon-guide article strong { display: block; margin-bottom: 3px; }
+.typhoon-guide article span { font-size: 13px; }
 .insurance-claims details { border-bottom: 1px solid var(--line); }
 .insurance-claims summary { padding: 15px 0; cursor: pointer; font-weight: 700; min-height: 48px; }
 .insurance-claims summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
