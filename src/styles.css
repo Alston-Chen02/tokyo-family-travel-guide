@@ -630,3 +630,41 @@ footer b { color: white; }
   .travel-notes label { min-height: 44px; display: flex; align-items: center; font-size: 13px; line-height: 1.55; }
   .travel-notes input { width: 20px; height: 20px; flex: 0 0 auto; }
 }
+
+/* Family insurance: compact coverage comparison and expandable claim documents. */
+.insurance-guide { margin: 28px 0; padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); }
+.insurance-overview { padding: 26px; border-radius: 14px; background: #263c35; color: #fffdf6; }
+.insurance-overview h2 { margin: 8px 0; font-family: var(--font-display); font-size: 30px; }
+.insurance-overview > p { margin: 8px 0; }
+.insurance-badge { display: inline-block; padding: 4px 12px; border: 1px solid #b5cbb8; border-radius: 20px; font-size: 12px; }
+.insurance-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 24px 0 18px; }
+.insurance-facts small, .insurance-facts strong { display: block; }
+.insurance-facts strong { font-size: 20px; color: #f0d4a3; }
+.insurance-caption { font-size: 12px; line-height: 1.8; }
+.insurance-contact { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px 0 0; }
+.insurance-contact small, .insurance-contact a { display: block; }
+.insurance-contact a { font-size: 22px; font-weight: 700; min-height: 44px; overflow-wrap: anywhere; }
+.insurance-contact p { font-size: 12px; margin: 0; }
+.insurance-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+.insurance-table caption { text-align: left; font-size: 12px; margin-bottom: 8px; }
+.insurance-table th, .insurance-table td { padding: 13px 10px; text-align: left; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.insurance-table thead { background: #edf0e9; }
+.insurance-table tbody th { font-weight: 500; }
+.insurance-note { background: #f5efe3; padding: 16px; border-radius: 10px; font-size: 13px; }
+.insurance-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.insurance-benefits article { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.insurance-benefits h4 { margin: 0 0 6px; color: #7c3e34; }
+.insurance-benefits p { margin: 0; font-size: 13px; }
+.insurance-claims details { border-bottom: 1px solid var(--line); }
+.insurance-claims summary { padding: 15px 0; cursor: pointer; font-weight: 700; min-height: 48px; }
+.insurance-claims summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.insurance-claims ul { padding-left: 24px; font-size: 14px; }
+@media (max-width: 600px) {
+  .insurance-guide { padding: 16px; }
+  .insurance-overview { padding: 18px; }
+  .insurance-overview h2 { font-size: 26px; }
+  .insurance-facts, .insurance-contact, .insurance-benefits { grid-template-columns: 1fr; gap: 14px; }
+  .insurance-facts > div { padding-bottom: 10px; border-bottom: 1px solid #61756a; }
+  .insurance-table { font-size: 12px; }
+  .insurance-table th, .insurance-table td { padding: 10px 5px; }
+}

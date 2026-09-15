@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import InsuranceGuide from "./InsuranceGuide";
 import QrVault from "./QrVault";
 import ExpenseTracker from "./ExpenseTracker";
 import {
   AIRFARE,
+  TRAVEL_INSURANCE,
   AIRPORTER,
   AIRPORT_TRANSFER,
   DAYS,
@@ -27,7 +29,7 @@ const DEFAULT_EXCHANGE_RATE = 0.2045;
 const JPY_RATE = 0.215;
 const AQUA_PARK_TICKETS_TWD = 1168;
 const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
-const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD;
+const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD + TRAVEL_INSURANCE.totalTwd;
 
 const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
 const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
@@ -558,6 +560,7 @@ function Budget() {
     ["住宿總計", "¥289,492", "已付款 · 希爾頓 2 晚、巨蛋 2 晚、樂天城市 1 晚"],
     ["樂園門票", "¥21,800", "已付款 · 迪士尼成人 2 位、3 歲免費"],
     ["Aqua Park 門票", `NT$${money(AQUA_PARK_TICKETS_TWD)}`, "已付款 · 成人票 2 張 NT$1,112 + No-show Refund NT$56"],
+    ["南山旅平險", `NT$${money(TRAVEL_INSURANCE.totalTwd)}`, "已購買 · 成人計畫二 × 2＋幼兒計畫六 × 1 · 6 日"],
     ["當地交通", "¥12,000", "預估 · Skyliner、Suica / PASMO"],
     ["餐飲與購物", "¥150,000", "預估"],
     ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
@@ -570,6 +573,7 @@ function Budget() {
 const PRETRIP_CHECKS = [
   "護照、機票、住宿憑證已下載離線副本",
   "Visit Japan Web 與入境 QR Code 已準備",
+  "旅平險正式保單已確認承保、下載，並儲存保單號碼與救援電話",
   "Disney App 與門票完成登入",
   "PokéPark App、票種與同團票券",
   "Suica / PASMO、日幣、eSIM 與行動電源",
@@ -600,7 +604,7 @@ function Help({ onOpenQr }: { onOpenQr: () => void }) {
       <article><span className="eyebrow">NEARBY CARE</span><h3>附近兒科與急診</h3><p>依當下住宿地點開啟地圖搜尋；危急狀況直接撥 119。</p><div className="medical-links">{MEDICAL_SEARCHES.map(item => <a key={item.label} href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query)}`} target="_blank" rel="noreferrer">{item.label} ↗</a>)}</div></article>
       <article><span className="eyebrow">SHOW THIS SCREEN</span><h3>親子求助日文</h3><dl className="phrase-list">{EMERGENCY_PHRASES.map(item => <div key={item.zh}><dt>{item.zh}</dt><dd lang="ja">{item.jp}</dd></div>)}</dl></article>
     </div>
-    <article className="insurance-card"><div><span className="eyebrow">24H ASSISTANCE</span><h3>{EMERGENCY_INFO.insurance.title}</h3></div><a className="insurance-phone" href={`tel:${EMERGENCY_INFO.insurance.hotline.split(" ")[0]}`}>{EMERGENCY_INFO.insurance.hotline}</a><dl><div><dt>保單號碼</dt><dd>請至「住宿」頁的本機保管箱</dd></div><div><dt>保障摘要</dt><dd>{EMERGENCY_INFO.insurance.note}</dd></div></dl></article>
+    <InsuranceGuide />
     <div className="backup-plans"><h3>行程卡住時，照這個順序。</h3><div><b>交通延誤</b><p>先保留住宿與已預約票券；購物與非指定時間景點優先刪除。用官方 App／站務員確認替代線，必要時直接叫車。</p></div><div><b>孩子不舒服</b><p>回最近飯店休息 → JNTO 中文熱線協助找醫療 → 有呼吸困難、意識不清或嚴重過敏直接 119。</p></div><div><b>班機／回程異動</b><p>先聯絡長榮與接送司機，再通知保險公司；保留延誤證明、收據與 App 截圖。</p></div><div><b>護照／手機遺失</b><p>先警局報案並留存受理號碼 → 聯絡駐日代表處／電信業者 → 更改重要帳號密碼與凍結行動支付。</p></div><div><b>地震／颱風</b><p>先依飯店、車站與場館廣播就地避難，避免搭電梯；保留電力，再透過 JNTO 與官方防災資訊確認後續交通。</p></div></div>
     <TravelChecklist />
   </section>;

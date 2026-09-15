@@ -211,11 +211,7 @@ export const EMERGENCY_INFO = {
     { label: 'JNTO 中文旅客熱線', number: '050-3816-2787', icon: 'phone' },
     { label: '駐日代表處 TECRO', number: '+81-3-3280-7811', icon: 'globe' },
   ],
-  insurance: {
-    title: '海外旅平險 / 不便險',
-    hotline: '0800-024-365 (24H)',
-    note: '航班延誤每 4 小時上限 NT$5,000 · 行李遺失上限 NT$20,000 · 海外突發醫療上限 NT$100 萬',
-  },
+
 };
 
 export const RESERVATION_HUB = [
@@ -697,3 +693,5 @@ export const DAYS: DayPlan[] = [
     ],
   },
 ];
+
+export const TRAVEL_INSURANCE = { totalTwd: 4937 } as const;
