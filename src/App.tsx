@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import InsuranceGuide from "./InsuranceGuide";
 import QrVault from "./QrVault";
 import ExpenseTracker from "./ExpenseTracker";
 import TyphoonTracker from "./TyphoonTracker";
+import { WEATHER_SWAP_DAYS } from "./weatherSwap";
 import {
   AIRFARE,
   TRAVEL_INSURANCE,
@@ -23,6 +24,7 @@ import {
 type View = "schedule" | "bookings" | "budget" | "typhoon" | "help";
 
 const STORAGE_KEY = "tokyo-family-guide-progress-v2";
+const WEATHER_SWAP_KEY = "tokyo-family-guide-sep21-22-swap-v1";
 const PRIVATE_VAULT_KEY = "tokyo-family-guide-private-vault-v1";
 const CHECKLIST_KEY = "tokyo-family-guide-checklist-v1";
 const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
@@ -118,8 +120,13 @@ const minusDays = (date: string, days: number) => {
   return value.toISOString().slice(0, 10);
 };
 
+const weatherLocation = (day: typeof DAYS[number]) =>
+  day.id === "d3" && day.cityKey === "tokyo" ? WEATHER_LOCATIONS.d4
+    : day.id === "d4" && day.cityKey === "omiya" ? WEATHER_LOCATIONS.d3
+      : WEATHER_LOCATIONS[day.id];
+
 const weatherUrl = (day: typeof DAYS[number]) => {
-  const location = WEATHER_LOCATIONS[day.id];
+  const location = weatherLocation(day);
   const params = new URLSearchParams({
     latitude: String(location.latitude),
     longitude: String(location.longitude),
@@ -342,7 +349,7 @@ function DisneylandFamilyMap() {
   </section>;
 }
 
-function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" | "during" | "after" }) {
+function WeatherCard({ day, days, mode }: { day: typeof DAYS[number]; days: typeof DAYS; mode: "before" | "during" | "after" }) {
   const [snapshot, setSnapshot] = useState<WeatherSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -352,11 +359,12 @@ function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" |
   const daysUntil = dayDistance(today, day.date);
   const available = mode !== "after" && daysUntil >= 0 && daysUntil < WEATHER_FORECAST_DAYS;
   const availableFrom = minusDays(day.date, WEATHER_FORECAST_DAYS - 1);
-  const nextDay = DAYS.find(candidate => candidate.day === day.day + 1);
+  const nextDay = days.find(candidate => candidate.day === day.day + 1);
+  const location = weatherLocation(day);
 
   useEffect(() => {
     if (!available) return;
-    const cacheId = `${day.id}:${day.date}`;
+    const cacheId = `${day.id}:${day.date}:${location.name}`;
     let cached: WeatherSnapshot | null = null;
     try {
       const cache = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || "{}") as Record<string, WeatherSnapshot>;
@@ -380,7 +388,7 @@ function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" |
     )).then(responses => {
       const makeDay = (item: typeof DAYS[number], response: WeatherApiResponse): WeatherDay => ({
         date: item.date,
-        location: WEATHER_LOCATIONS[item.id].name,
+        location: weatherLocation(item).name,
         weatherCode: response.daily.weather_code[0],
         maxTemp: Math.round(response.daily.temperature_2m_max[0]),
         minTemp: Math.round(response.daily.temperature_2m_min[0]),
@@ -417,13 +425,13 @@ function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" |
       }
     }).finally(() => setLoading(false));
     return () => controller.abort();
-  }, [available, day.id, day.date, nextDay?.id]);
+  }, [available, day.id, day.date, location.name, nextDay?.id, nextDay?.cityKey]);
 
   if (mode === "after") return null;
 
   if (!available) return <article className="weather-card weather-upcoming">
     <div className="weather-heading"><span>WEATHER READY</span><b>旅程天氣</b></div>
-    <div className="weather-upcoming-copy"><i>☁</i><div><strong>{day.dateLabel} · {WEATHER_LOCATIONS[day.id].name}</strong><p>逐時預報預計於 {availableFrom.split("-").join("/")} 開放，進入預報範圍後會自動顯示。</p></div></div>
+    <div className="weather-upcoming-copy"><i>☁</i><div><strong>{day.dateLabel} · {location.name}</strong><p>逐時預報預計於 {availableFrom.split("-").join("/")} 開放，進入預報範圍後會自動顯示。</p></div></div>
     <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noreferrer">日本氣象廳官方預報 ↗</a>
   </article>;
 
@@ -474,6 +482,7 @@ function WeatherCard({ day, mode }: { day: typeof DAYS[number]; mode: "before" |
 
 function TodayPanel({
   day,
+  days,
   nextStop,
   mode,
   onOpenDay,
@@ -482,6 +491,7 @@ function TodayPanel({
   offlineReady,
 }: {
   day: typeof DAYS[number];
+  days: typeof DAYS;
   nextStop: ItineraryStop;
   mode: "before" | "during" | "after";
   onOpenDay: () => void;
@@ -516,22 +526,22 @@ function TodayPanel({
       <div className="offline-state"><i className={offlineReady ? "ready" : ""}/><span>{offlineReady ? "行程已離線保存 · 導航、天氣與官方連結需網路" : "首次開啟後自動預載離線行程"}</span></div>
     </article>
     <aside className="holiday-alert"><b>9/19–9/23 日本連假提醒</b><span>9/21 敬老日、9/22 國定休日、9/23 秋分日。交通、園區與室內景點皆預留排隊時間，票券盡量事前完成。</span></aside>
-    <WeatherCard day={day} mode={mode} />
+    <WeatherCard key={`${day.id}:${day.cityKey}`} day={day} days={days} mode={mode} />
   </section>;
 }
 
-function ReservationHub() {
+function ReservationHub({ weatherSwap }: { weatherSwap: boolean }) {
   return <section className="reservation-section">
     <div className="section-heading compact"><span>TICKETS & BOOKINGS</span><h2>票券與預約，一次打開。</h2><p>把會在入口前臨時找不到的東西，先集中在這裡。</p></div>
     <div className="reservation-grid">{RESERVATION_HUB.map(item => <article key={item.id}>
-      <div><span className={`status ${item.status.includes("待") || item.status === "確認票種" ? "pending" : "paid"}`}>{item.status}</span><small>{item.meta}</small></div>
+      <div><span className={`status ${item.status.includes("待") || item.status === "確認票種" ? "pending" : "paid"}`}>{item.status}</span><small>{weatherSwap && item.id === "railway" ? "09/22 · 日本連假高人流（風雨備案）" : item.meta}</small></div>
       <h3>{item.title}</h3><p>{item.note}</p>
       <a href={item.url} target="_blank" rel="noreferrer">{item.action} ↗</a>
     </article>)}</div>
   </section>;
 }
 
-function Bookings() {
+function Bookings({ weatherSwap }: { weatherSwap: boolean }) {
   return <section className="content-section">
     <div className="section-heading"><span>STAY & LUGGAGE</span><h2>旅宿與行李，都安排妥當。</h2><p>公開頁只放地址、電話與執行資訊；確認碼與姓名請儲存在這台裝置的私密保管箱。</p></div>
     <PrivateVault />
@@ -546,12 +556,13 @@ function Bookings() {
           <div><dt>電話</dt><dd><a href={`tel:${hotel.phone}`}>{hotel.phone}</a></dd></div>
         </dl>
         <p className="hotel-note">{hotel.note}</p>
+        {hotel.replyHighlights && <div className="hotel-reply"><strong>飯店回覆確認 · 09/16</strong><ul>{hotel.replyHighlights.map(point => <li key={point}>{point}</li>)}</ul></div>}
         <div className="action-row"><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.mapQuery)}`} target="_blank" rel="noreferrer">飯店導航 ↗</a><a href={hotel.website} target="_blank" rel="noreferrer">官方網站 ↗</a></div>
       </article>)}
     </div>
     <div className="section-heading compact"><span>LUGGAGE RELAY</span><h2>行李先走，我們輕裝旅行。</h2></div>
     <div className="luggage-list">{LUGGAGE_ROUTE.map((item, i) => <article key={i}><div className="route-index">{i + 1}</div><div><b>{item.date} · {item.method}</b><h3>{item.from} <span>→</span> {item.to}</h3><p>{item.note}</p><small>{item.cost}</small></div><span className={`status ${item.status}`}>{item.status === "paid" ? "已付款" : "待確認"}</span></article>)}</div>
-    <ReservationHub />
+    <ReservationHub weatherSwap={weatherSwap} />
   </section>;
 }
 
@@ -672,6 +683,7 @@ export default function Home() {
   const [view, setView] = useState<View>("schedule");
   const [dayId, setDayId] = useState(DAYS[0].id);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [weatherSwap, setWeatherSwap] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -681,12 +693,14 @@ export default function Home() {
 
   useEffect(() => {
     try { setCompleted(new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"))); } catch { /* empty */ }
+    try { setWeatherSwap(localStorage.getItem(WEATHER_SWAP_KEY) === "on"); } catch { /* empty */ }
     const tokyo = datePartsInTokyo();
     const matchingDay = DAYS.find(d => d.date === tokyo.date);
     if (matchingDay) setDayId(matchingDay.id);
     setHydrated(true);
   }, []);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify([...completed])); }, [completed, hydrated]);
+  useEffect(() => { if (hydrated) localStorage.setItem(WEATHER_SWAP_KEY, weatherSwap ? "on" : "off"); }, [weatherSwap, hydrated]);
   useEffect(() => {
     const refreshClock = () => setNow(datePartsInTokyo());
     const timer = window.setInterval(refreshClock, 60_000);
@@ -702,10 +716,13 @@ export default function Home() {
     if ("serviceWorker" in navigator) navigator.serviceWorker.ready.then(() => setOfflineReady(true)).catch(() => undefined);
     return () => window.removeEventListener("beforeinstallprompt", capturePrompt);
   }, []);
-  const day = DAYS.find(d => d.id === dayId) || DAYS[0];
-  const tripTotal = useMemo(() => DAYS.reduce((n, d) => n + d.stops.length, 0), []);
+  const planDays = weatherSwap ? WEATHER_SWAP_DAYS : DAYS;
+  const day = planDays.find(d => d.id === dayId) || planDays[0];
+  const planStops = planDays.flatMap(d => d.stops);
+  const tripTotal = planStops.length;
+  const completedCount = planStops.filter(stop => completed.has(stop.id)).length;
   const tripMode: "before" | "during" | "after" = now.date < DAYS[0].date ? "before" : now.date > DAYS[DAYS.length - 1].date ? "after" : "during";
-  const todayDay = DAYS.find(d => d.date === now.date) || (tripMode === "after" ? DAYS[DAYS.length - 1] : DAYS[0]);
+  const todayDay = planDays.find(d => d.date === now.date) || (tripMode === "after" ? planDays[planDays.length - 1] : planDays[0]);
   const incompleteStops = todayDay.stops.filter(stop => !completed.has(stop.id));
   const currentStopIndex = tripMode === "during"
     ? todayDay.stops.reduce((latest, stop, index) => startMinutes(stop.time) <= now.minutes ? index : latest, -1)
@@ -724,22 +741,27 @@ export default function Home() {
     <header className="hero">
       <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => setQrOpen(true)} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
       <div className="hero-content"><div><p className="kicker">TOKYO · SIX DAYS TOGETHER</p><h1>東京，慢慢走。<br/><em>六日親子行旅</em></h1><p className="hero-copy">2026/09/19 — 09/24 · 兩大一小<br/>從第一班航班到最後一件行李，旅程需要的都在這裡。</p></div><div className="trip-stamp"><span>6</span><b>DAYS</b><i>5 NIGHTS</i><small>TPE ⇄ NRT</small></div></div>
-      <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completed.size}/{tripTotal}</b><span>已完成 {Math.round(completed.size / tripTotal * 100)}%</span></div></div>
+      <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completedCount}/{tripTotal}</b><span>已完成 {Math.round(completedCount / tripTotal * 100)}%</span></div></div>
     </header>
 
     <div className="desktop-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}>每日行程</button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}>旅宿與行李</button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}>旅費筆記</button><button className={view === "typhoon" ? "active" : ""} onClick={() => switchView("typhoon")}>颱風動態</button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}>安心資訊</button></div>
 
     {view === "schedule" && <>
-      <TodayPanel day={todayDay} nextStop={nextStop} mode={tripMode} onOpenDay={openToday} installPrompt={installPrompt} onInstall={install} offlineReady={offlineReady} />
+      <TodayPanel day={todayDay} days={planDays} nextStop={nextStop} mode={tripMode} onOpenDay={openToday} installPrompt={installPrompt} onInstall={install} offlineReady={offlineReady} />
       <section className="flight-section"><FlightCard flight={FLIGHTS.outbound} label="啟程 · OUTBOUND"/><FlightCard flight={FLIGHTS.return} label="歸程 · RETURN"/></section>
       <section className="day-shell">
-        <div className="day-tabs" aria-label="選擇行程日期">{DAYS.map(d => <button key={d.id} className={d.id === day.id ? "active" : ""} onClick={() => setDayId(d.id)}><small>{d.dateLabel}</small><b>D{d.day}</b><span>週{d.weekday}</span></button>)}</div>
+        <div className={`weather-swap-panel ${weatherSwap ? "is-active" : ""}`}>
+          <div><span className="eyebrow">9/21 ↔ 9/22 · 風雨備案</span><h2>兩天遊玩行程，必要時對調。</h2><p>啟用後，9/21 改為巨蛋室內行程；9/22 從東京巨蛋飯店往返大宮。退房、行李配送、入住與 9/23 已購票日期不變。</p></div>
+          <button type="button" role="switch" aria-checked={weatherSwap} aria-label="切換 9 月 21 日與 22 日的風雨備案" onClick={() => setWeatherSwap(value => !value)}>{weatherSwap ? "已啟用・還原原行程" : "啟用風雨備案"}</button>
+          <small>切換只保存在這台裝置；另一支手機需各自切換。遇強風或列車停駛，先留在安全處，不為趕景點出行。鐵道博物館、ASOBono! 開館與票券請於啟用前確認。</small>
+        </div>
+        <div className="day-tabs" aria-label="選擇行程日期">{planDays.map(d => <button key={d.id} className={d.id === day.id ? "active" : ""} onClick={() => setDayId(d.id)}><small>{d.dateLabel}</small><b>D{d.day}</b><span>週{d.weekday}</span></button>)}</div>
         <div className="day-header"><div><span className="eyebrow">DAY {day.day} · {day.dateLabel}（週{day.weekday}）</span><h2>{day.theme}</h2><p>{day.cityLabel}</p></div><div className="day-progress"><b>{day.stops.filter(s => completed.has(s.id)).length}/{day.stops.length}</b><span>今日完成</span></div></div>
         {day.id === "d2" && <DisneylandFamilyMap />}
         <div className="itinerary">{day.stops.map((stop, i) => <StopCard key={stop.id} stop={stop} index={i} done={completed.has(stop.id)} onToggle={() => toggle(stop.id)}/>)}</div>
       </section>
     </>}
-    {view === "bookings" && <Bookings/>}
+    {view === "bookings" && <Bookings weatherSwap={weatherSwap}/>}
     {view === "budget" && <Budget/>}
     {view === "typhoon" && <TyphoonTracker/>}
     {view === "help" && <Help onOpenQr={() => setQrOpen(true)}/>}

@@ -121,8 +121,6 @@ export interface HotelInfo {
   checkOut: string;
   nights: number;
   roomType: string;
-  pricePerNight: number;
-  currency: string;
   mapQuery: string;
   note: string;
   stars: number;
@@ -133,6 +131,7 @@ export interface HotelInfo {
   checkOutTime?: string;
   addressJp?: string;
   phone?: string;
+  replyHighlights?: string[];
 }
 
 export const HOTELS: HotelInfo[] = [
@@ -145,8 +144,6 @@ export const HOTELS: HotelInfo[] = [
     checkOut: '09/21',
     nights: 2,
     roomType: '豪華海景客房（雙床)',
-    pricePerNight: 74114,
-    currency: 'JPY',
     mapQuery: 'Hilton Tokyo Bay',
     note: '位於迪士尼度假區單軌海濱站對面!第二天玩迪士尼中場可搭單軌 5 分鐘回房睡午覺,寶寶體力不崩潰。',
     stars: 5,
@@ -154,9 +151,14 @@ export const HOTELS: HotelInfo[] = [
     facilities: ['迪士尼度假區單軌海濱站對面', '豪華海景客房', '室內泳池與休憩設施', '24H FamilyMart 便利商店', '免費接駁巴士 Resort Cruiser', '迪士尼園區中途返房午休'],
     coverQuery: 'Hilton Tokyo Bay hotel exterior waterfront',
     checkInTime: '15:00',
-    checkOutTime: '11:00',
+    checkOutTime: '12:00',
     addressJp: '千葉県浦安市舞浜1-8',
     phone: '047-355-5000',
+    replyHighlights: [
+      '雙床豪華海景房可供 2 位大人與 1 名 3 歲孩童同床入住，孩童不加價；已請飯店將孩童加註訂單，仍待回覆是否完成。',
+      '飯店確認本次住宿三人早餐免費，不需預約；其他消費可掛房並於退房時結算。',
+      '已確認抵達前可代收 3 件 LuggAgent 行李，於大廳服務櫃台保管與領取。',
+    ],
   },
   {
     id: 'h2',
@@ -167,18 +169,22 @@ export const HOTELS: HotelInfo[] = [
     checkOut: '09/23',
     nights: 2,
     roomType: '高樓層頂級房(35th-38th Floor Premium Room Twin)',
-    pricePerNight: 41757,
-    currency: 'JPY',
     mapQuery: 'Tokyo Dome Hotel',
     note: '位處市中心樞紐,35-38 樓高樓層視野,下樓直接連通 ASOBono! 全東京最大室內球池樂園。',
     stars: 5,
     website: 'https://www.tokyodome-hotels.co.jp/',
     facilities: ['35-38 樓高樓層夜景視野', '直通 ASOBono! 室內球池樂園', '東京巨蛋城 LaQua 商城步行 3 分', 'JR 水道橋站步行 2 分', '成城石井超市採買', '巨蛋城亮燈夜景'],
     coverQuery: 'Tokyo Dome Hotel building night city view',
-    checkInTime: '15:00',
+    checkInTime: '14:00',
     checkOutTime: '11:00',
     addressJp: '東京都文京区後楽1-3-61',
     phone: '03-5805-2222',
+    replyHighlights: [
+      '3 歲孩童可免費同住，但不提供額外床位；孩童早餐未包含在訂房內。',
+      '若在 Artist Café 用早餐，可現場點購 ¥2,240 兒童餐，於餐廳直接付款。',
+      '頂級雙床房可於 2 樓 Premium Stage 14:00–18:00 辦理入住；其他時段至 1 樓。',
+      '可提前代收行李；寄送標籤須註明入住日期與訂房代表姓名。',
+    ],
   },
   {
     id: 'h3',
@@ -189,8 +195,6 @@ export const HOTELS: HotelInfo[] = [
     checkOut: '09/24',
     nights: 1,
     roomType: '塔樓小型套房(Towers Junior Suite)',
-    pricePerNight: 57750,
-    currency: 'JPY',
     mapQuery: 'Lotte City Hotel Kinshicho',
     note: '48-60㎡ 超大套房方便打包!地鐵站直通,對面即是阿卡將婦幼旗艦店,最後一天 JR 總武線快速免轉車直達成田機場。',
     stars: 4,
@@ -201,6 +205,11 @@ export const HOTELS: HotelInfo[] = [
     checkOutTime: '11:00',
     addressJp: '東京都墨田区錦糸4-6-1',
     phone: '03-5619-1066',
+    replyHighlights: [
+      '飯店確認塔樓小型套房 1 間、三人入住，三人的早餐均已包含。',
+      '房費於飯店現場結算，飯店回覆金額已含住宿稅；孩童獨立寢具未獲明確確認。',
+      '可於抵達前代收並在櫃台保管行李；運送單須註明訂房代表姓名與入住日期。',
+    ],
   },
 ];
 
@@ -543,11 +552,11 @@ export const DAYS: DayPlan[] = [
     cityLabel: '東京・後樂園 ➔ 東京車站 ➔ 水道橋',
     cityKey: 'tokyo',
     stops: [
-      mkStop('d4s1', '09:00 - 10:00', '享用東京巨蛋飯店高樓層早餐', '東京巨蛋飯店 (Tokyo Dome Hotel)',
-        '於 35-38 樓頂級房型專屬區或高樓層景觀餐廳享用豐盛自助早餐，俯瞰東京巨蛋城全景，展開元氣充沛的一天。',
-        ['早餐：飯店高樓層景觀早餐', '自助早餐', '巨蛋城全景'],
+      mkStop('d4s1', '09:00 - 10:00', '東京巨蛋飯店早餐', '東京巨蛋飯店 (Tokyo Dome Hotel)',
+        '於飯店依訂房方案享用早餐。飯店確認 3 歲孩童早餐未含；若前往 Artist Café，可於當日現場點購兒童餐並在餐廳付款。',
+        ['成人早餐依訂房方案', '孩童早餐另計', 'Artist Café 兒童餐可現場點購'],
         { type: 'walk', label: '館內', route: '客房 → 餐廳', duration: '—' },
-        'Tokyo Dome Hotel', 'tokyo', '早餐：飯店高樓層景觀早餐', '已含於住宿費'),
+        'Tokyo Dome Hotel', 'tokyo', '早餐：飯店內用餐', '3 歲孩童早餐未含；Artist Café 兒童餐 ¥2,240'),
       mkStop('d4s2', '10:00 - 13:00', 'ASOBono! (アソボ～ノ!) 巨型室內兒童樂園', '東京巨蛋城 (Tokyo Dome City)',
         '飯店下樓直接連通商場零距離！進入全東京最大型的室內兒童樂園 ASOBono!，暢玩巨型海洋球池、氣墊跳床、木製廚房扮家家酒區與 Tomica 火車軌道區。午餐直接於巨蛋城商場內親子友善餐廳或美食街享用。',
         ['零距離飯店連通', '全東京最大球池', 'Tomica 火車軌道區', '氣墊跳床', '木製廚房扮家家酒'],
