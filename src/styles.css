@@ -141,6 +141,14 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .passenger b { font-size: 11px; }
 
 .day-shell { padding-top: 36px; padding-bottom: 90px; }
+.weather-swap-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 24px; margin-bottom: 20px; padding: 22px 24px; border: 1px solid #d5cbb7; border-radius: 14px; background: #fffaf0; }
+.weather-swap-panel.is-active { border-color: #8ba997; background: #eef5ee; }
+.weather-swap-panel h2 { margin: 6px 0; font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 27px); font-weight: 500; }
+.weather-swap-panel p { margin: 0; color: #55655a; font-size: 12px; line-height: 1.7; }
+.weather-swap-panel button { min-height: 48px; padding: 10px 16px; border: 1px solid var(--ink); border-radius: 9px; background: var(--ink); color: white; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.weather-swap-panel button:focus-visible { outline: 3px solid #d49a4a; outline-offset: 3px; }
+.weather-swap-panel.is-active button { background: white; color: var(--ink); }
+.weather-swap-panel > small { grid-column: 1 / -1; color: #68736a; font-size: 11px; line-height: 1.65; }
 .day-tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; overflow: hidden; background: var(--line); border: 1px solid var(--line); border-radius: 12px; }
 .day-tabs button { min-width: 0; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 2px 5px; padding: 13px 14px; border: 0; background: var(--card); color: #68716a; text-align: left; cursor: pointer; }
 .day-tabs button small { grid-column: 1; font-size: 9px; }
@@ -260,6 +268,10 @@ dt { color: #8a918c; font-size: 9px; }
 dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .mono { font-family: ui-monospace, monospace; letter-spacing: .08em; font-weight: 800; }
 .hotel-note { min-height: 76px; color: #58635b; font-size: 11px; line-height: 1.7; }
+.hotel-reply { margin: 0 0 18px; padding: 14px 15px; border: 1px solid #d9e3d8; border-radius: 10px; background: #f4f8f3; }
+.hotel-reply strong { display: block; color: #305446; font-size: 11px; letter-spacing: .04em; }
+.hotel-reply ul { margin: 9px 0 0; padding-left: 17px; }
+.hotel-reply li { margin-top: 6px; color: #485a50; font-size: 11px; line-height: 1.7; }
 .sensitive-value { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 .sensitive-value .masked { letter-spacing: .12em; color: #777f79; }
 .sensitive-value button { padding: 3px 7px; border: 1px solid #d1d6d0; border-radius: 99px; color: #516057; background: #f4f5f1; font-size: 9px; font-weight: 800; cursor: pointer; }
@@ -656,6 +668,8 @@ footer b { color: white; }
 }
 
 @media screen and (max-width: 800px) {
+  .weather-swap-panel { grid-template-columns: 1fr; padding: 17px; }
+  .weather-swap-panel button { width: 100%; }
   .brand small { font-size: 9px; letter-spacing: .18em; }
   .topbar > button { min-height: 38px; font-size: 11px; }
   .hero-copy { font-size: 15px; line-height: 1.75; }
