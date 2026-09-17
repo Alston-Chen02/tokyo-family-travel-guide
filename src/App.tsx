@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import InsuranceGuide from "./InsuranceGuide";
 import QrVault from "./QrVault";
-import ExpenseTracker from "./ExpenseTracker";
+import TravelBudget from "./TravelBudget";
 import TyphoonTracker from "./TyphoonTracker";
 import { WEATHER_SWAP_DAYS } from "./weatherSwap";
 import {
-  AIRFARE,
-  TRAVEL_INSURANCE,
-  AIRPORTER,
-  AIRPORT_TRANSFER,
   DAYS,
   EMERGENCY_PHRASES,
   EMERGENCY_INFO,
   FLIGHTS,
   HOTELS,
-  LUGGAGE_AGENT,
   LUGGAGE_ROUTE,
   MEDICAL_SEARCHES,
   RESERVATION_HUB,
@@ -29,10 +24,6 @@ const PRIVATE_VAULT_KEY = "tokyo-family-guide-private-vault-v1";
 const CHECKLIST_KEY = "tokyo-family-guide-checklist-v1";
 const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
 const DEFAULT_EXCHANGE_RATE = 0.2045;
-const JPY_RATE = 0.215;
-const AQUA_PARK_TICKETS_TWD = 1168;
-const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
-const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD + TRAVEL_INSURANCE.totalTwd;
 
 const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
 const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
@@ -159,7 +150,8 @@ type InstallPromptEvent = Event & {
 const VAULT_FIELDS = [
   ["pnr", "長榮機票 PNR"], ["guest", "入住人英文姓名"],
   ["hotel1", "東京灣希爾頓確認碼"], ["hotel2", "東京巨蛋飯店確認碼"],
-  ["hotel3", "樂天城市飯店確認碼"], ["airporter", "Airporter 訂單號"],
+  ["hotel3", "樂天城市飯店確認碼"], ["airporter", "09/21 Airporter 訂單號"],
+  ["airporter23", "09/23 Airporter 訂單號"],
   ["insurance", "保單號碼"],
 ] as const;
 
@@ -530,18 +522,18 @@ function TodayPanel({
   </section>;
 }
 
-function ReservationHub({ weatherSwap }: { weatherSwap: boolean }) {
+function ReservationHub({ weatherSwap, onOpenSkylinerQr }: { weatherSwap: boolean; onOpenSkylinerQr: () => void }) {
   return <section className="reservation-section">
     <div className="section-heading compact"><span>TICKETS & BOOKINGS</span><h2>票券與預約，一次打開。</h2><p>把會在入口前臨時找不到的東西，先集中在這裡。</p></div>
     <div className="reservation-grid">{RESERVATION_HUB.map(item => <article key={item.id}>
       <div><span className={`status ${item.status.includes("待") || item.status === "確認票種" ? "pending" : "paid"}`}>{item.status}</span><small>{weatherSwap && item.id === "railway" ? "09/22 · 日本連假高人流（風雨備案）" : item.meta}</small></div>
       <h3>{item.title}</h3><p>{item.note}</p>
-      <a href={item.url} target="_blank" rel="noreferrer">{item.action} ↗</a>
+      <div className="reservation-actions">{item.id === "skyliner" && <button type="button" onClick={onOpenSkylinerQr}>開啟兌換 QR</button>}<a href={item.url} target="_blank" rel="noreferrer">{item.action} ↗</a></div>
     </article>)}</div>
   </section>;
 }
 
-function Bookings({ weatherSwap }: { weatherSwap: boolean }) {
+function Bookings({ weatherSwap, onOpenSkylinerQr }: { weatherSwap: boolean; onOpenSkylinerQr: () => void }) {
   return <section className="content-section">
     <div className="section-heading"><span>STAY & LUGGAGE</span><h2>旅宿與行李，都安排妥當。</h2><p>公開頁只放地址、電話與執行資訊；確認碼與姓名請儲存在這台裝置的私密保管箱。</p></div>
     <PrivateVault />
@@ -562,24 +554,8 @@ function Bookings({ weatherSwap }: { weatherSwap: boolean }) {
     </div>
     <div className="section-heading compact"><span>LUGGAGE RELAY</span><h2>行李先走，我們輕裝旅行。</h2></div>
     <div className="luggage-list">{LUGGAGE_ROUTE.map((item, i) => <article key={i}><div className="route-index">{i + 1}</div><div><b>{item.date} · {item.method}</b><h3>{item.from} <span>→</span> {item.to}</h3><p>{item.note}</p><small>{item.cost}</small></div><span className={`status ${item.status}`}>{item.status === "paid" ? "已付款" : "待確認"}</span></article>)}</div>
-    <ReservationHub weatherSwap={weatherSwap} />
+    <ReservationHub weatherSwap={weatherSwap} onOpenSkylinerQr={onOpenSkylinerQr} />
   </section>;
-}
-
-function Budget() {
-  const items = [
-    ["機票費用", `NT$${money(AIRFARE.total)}`, "已付款 · 皇璽桂冠艙 2 大 1 小"],
-    ["住宿總計", "¥289,492", "已付款 · 希爾頓 2 晚、巨蛋 2 晚、樂天城市 1 晚"],
-    ["樂園門票", "¥21,800", "已付款 · 迪士尼成人 2 位、3 歲免費"],
-    ["Aqua Park 門票", `NT$${money(AQUA_PARK_TICKETS_TWD)}`, "已付款 · 成人票 2 張 NT$1,112 + No-show Refund NT$56"],
-    ["南山旅平險", `NT$${money(TRAVEL_INSURANCE.totalTwd)}`, "已購買 · 成人計畫二 × 2＋幼兒計畫六 × 1 · 6 日"],
-    ["當地交通", "¥12,000", "預估 · Skyliner、Suica / PASMO"],
-    ["餐飲與購物", "¥150,000", "預估"],
-    ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
-    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, "已付款 · 訂單號存於本機保管箱"],
-    ["回程機場專車", `NT$${money(AIRPORT_TRANSFER.totalTwd)}`, "預估 · 含嬰兒座椅"],
-  ];
-  return <section className="content-section"><div className="section-heading"><span>TRIP BUDGET</span><h2>把預算，留給值得的風景。</h2><p>費用依原規劃完整保留 · 換算匯率 1 JPY ≈ NT$0.215</p></div><div className="budget-total"><small>六天五夜 · 旅程預算</small><strong>NT${money(budgetTwd)}</strong><span>日本當地 ¥{money(budgetJpy)} + 台幣固定支出</span></div><div className="budget-grid">{items.map(([label, amount, note]) => <article key={label}><span>{label}</span><b>{amount}</b><small>{note}</small></article>)}</div><ExpenseTracker /></section>;
 }
 
 const PRETRIP_CHECKS = [
@@ -686,6 +662,7 @@ export default function Home() {
   const [weatherSwap, setWeatherSwap] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [qrTarget, setQrTarget] = useState<"visit-japan" | "skyliner">("visit-japan");
   const [hydrated, setHydrated] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [offlineReady, setOfflineReady] = useState(false);
@@ -736,10 +713,11 @@ export default function Home() {
   const switchView = (next: View) => { setView(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const openToday = () => { setDayId(todayDay.id); setView("schedule"); window.setTimeout(() => document.querySelector(".day-shell")?.scrollIntoView({ behavior: "smooth" }), 40); };
   const install = async () => { if (!installPrompt) return; await installPrompt.prompt(); await installPrompt.userChoice; setInstallPrompt(null); };
+  const openQr = (target: "visit-japan" | "skyliner") => { setQrTarget(target); setQrOpen(true); };
 
   return <main>
     <header className="hero">
-      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => setQrOpen(true)} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
+      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => openQr("visit-japan")} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
       <div className="hero-content"><div><p className="kicker">TOKYO · SIX DAYS TOGETHER</p><h1>東京，慢慢走。<br/><em>六日親子行旅</em></h1><p className="hero-copy">2026/09/19 — 09/24 · 兩大一小<br/>從第一班航班到最後一件行李，旅程需要的都在這裡。</p></div><div className="trip-stamp"><span>6</span><b>DAYS</b><i>5 NIGHTS</i><small>TPE ⇄ NRT</small></div></div>
       <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completedCount}/{tripTotal}</b><span>已完成 {Math.round(completedCount / tripTotal * 100)}%</span></div></div>
     </header>
@@ -761,14 +739,14 @@ export default function Home() {
         <div className="itinerary">{day.stops.map((stop, i) => <StopCard key={stop.id} stop={stop} index={i} done={completed.has(stop.id)} onToggle={() => toggle(stop.id)}/>)}</div>
       </section>
     </>}
-    {view === "bookings" && <Bookings weatherSwap={weatherSwap}/>}
-    {view === "budget" && <Budget/>}
+    {view === "bookings" && <Bookings weatherSwap={weatherSwap} onOpenSkylinerQr={() => openQr("skyliner")}/>}
+    {view === "budget" && <TravelBudget/>}
     {view === "typhoon" && <TyphoonTracker/>}
-    {view === "help" && <Help onOpenQr={() => setQrOpen(true)}/>}
+    {view === "help" && <Help onOpenQr={() => openQr("visit-japan")}/>}
 
     <footer><b>東京，慢慢走。· 2026 秋</b><span>所有原定行程與時間完整保留 · 旅途中依現場公告從容調整</span></footer>
     <CurrencyCalculator open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
-    {qrOpen && <QrVault onClose={() => setQrOpen(false)} />}
+    {qrOpen && <QrVault initialSlot={qrTarget === "skyliner" ? "skyliner" : undefined} onClose={() => setQrOpen(false)} />}
     <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "typhoon" ? "active" : ""} onClick={() => switchView("typhoon")}><i>風</i><span>颱風</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
   </main>;
 }

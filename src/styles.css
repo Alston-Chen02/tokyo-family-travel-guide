@@ -294,16 +294,46 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .reservation-grid h3 { margin: 16px 0 7px; font-family: var(--font-serif); font-size: 19px; }
 .reservation-grid p { margin: 0; color: #667169; font-size: 11px; line-height: 1.7; }
 .reservation-grid a { align-self: flex-start; margin-top: auto; padding-top: 14px; color: var(--red); font-size: 10px; font-weight: 900; text-decoration: none; }
+.reservation-grid .reservation-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; margin-top: auto; padding-top: 14px; }
+.reservation-actions a { margin-top: 0; padding-top: 0; }
+.reservation-actions button { min-height: 44px; padding: 9px 13px; border: 0; border-radius: 8px; background: var(--ink); color: white; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 
-.budget-total { display: grid; grid-template-columns: 1fr auto; padding: 33px; color: white; background: linear-gradient(135deg, #252d29, #333c36); border-radius: 12px 12px 0 0; }
-.budget-total small { color: #b7c2ba; letter-spacing: .12em; }
-.budget-total strong { grid-row: 1 / 3; grid-column: 2; align-self: center; font-family: serif; font-size: clamp(32px, 5vw, 55px); color: #e4c48d; }
-.budget-total span { margin-top: 8px; color: #92a096; font-size: 10px; }
-.budget-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 1px; background: var(--line); }
-.budget-grid article { min-height: 130px; display: flex; flex-direction: column; padding: 20px; background: var(--card); }
-.budget-grid span { color: #717b74; font-size: 11px; }
-.budget-grid b { margin-top: 10px; font-family: serif; font-size: 24px; }
-.budget-grid small { margin-top: auto; color: #8b928d; font-size: 9px; line-height: 1.5; }
+.budget-switch { display: flex; gap: 6px; padding: 5px; margin-bottom: 24px; width: fit-content; max-width: 100%; border-radius: 12px; background: #e9ece6; }
+.budget-switch button { min-height: 46px; padding: 10px 22px; border: 0; border-radius: 8px; background: transparent; color: #536058; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.budget-switch button[aria-pressed=true] { background: var(--ink); color: white; box-shadow: 0 2px 5px #0001; }
+.budget-overview { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; padding: 32px; border-radius: 16px; color: white; background: #25372f; }
+.budget-grand > span { color: #d0dacd; font-size: 13px; }
+.budget-grand strong { display: block; margin: 12px 0 8px; color: #f0d8a9; font-size: clamp(30px, 4vw, 44px); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.budget-grand strong small { font-size: 14px; vertical-align: middle; letter-spacing: 0; }
+.budget-grand p { margin: 0; color: #d0dacd; font-size: 12px; }
+.budget-currency-totals { display: grid; gap: 18px; margin: 0; padding-left: 28px; border-left: 1px solid #ffffff30; align-content: center; }
+.budget-currency-totals div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.budget-currency-totals dt { color: #d0dacd; font-size: 13px; }
+.budget-currency-totals dd { margin: 0; font-size: 23px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.budget-rate { margin: 12px 0 28px; color: #637066; font-size: 12px; line-height: 1.7; }
+.budget-detail-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+.budget-currency-group { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.budget-currency-group > header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 22px; background: #f1f1e9; border-bottom: 1px solid var(--line); }
+.budget-currency-group header span { color: #718074; font-size: 10px; letter-spacing: .12em; }
+.budget-currency-group h3 { margin: 5px 0 0; font-size: 20px; }
+.budget-currency-group header strong { font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.budget-cost-list { margin: 0; padding: 0; list-style: none; }
+.budget-cost-list li { padding: 20px 22px; }
+.budget-cost-list li + li { border-top: 1px solid var(--line); }
+.budget-cost-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.budget-cost-top h4 { margin: 0; font-size: 16px; line-height: 1.5; }
+.budget-cost-top b { font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.budget-payment-status { display: inline-block; margin-top: 9px; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+.budget-payment-status.paid { background: #e7efe8; color: #315b40; }
+.budget-payment-status.estimate { background: #eeece6; color: #625f53; }
+.budget-payment-status.review { background: #fbedd8; color: #845b22; }
+.budget-cost-list p { margin: 9px 0 0; color: #657066; font-size: 13px; line-height: 1.75; }
+.budget-accounting-note { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #f5f3eb; }
+.budget-accounting-note b { font-size: 15px; }
+.budget-accounting-note p { margin: 8px 0 12px; color: #657066; font-size: 13px; line-height: 1.7; }
+.budget-accounting-note button { min-height: 44px; padding: 10px 14px; border: 1px solid var(--ink); border-radius: 8px; background: var(--ink); color: white; font: inherit; font-size: 13px; cursor: pointer; }
+.travel-budget .expense-ledger { margin-top: 0; }
+.travel-budget [hidden] { display: none !important; }
 
 .expense-ledger { margin-top: 68px; }
 .expense-panel { padding: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
@@ -395,6 +425,8 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .qr-password-form input, .qr-slots input:not([type=file]) { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid #cbd2c9; border-radius: 8px; color: var(--ink); background: white; font: inherit; }
 .qr-password-form button:disabled, .qr-slot-actions button:disabled { opacity: .5; cursor: wait; }
 .qr-slots { display: grid; gap: 12px; }
+.qr-ticket-card { margin-bottom: 14px; border-color: #dcae6b !important; background: #fffbf3; }
+.qr-ticket-card p { margin: 0; color: #655540; font-size: 12px; line-height: 1.7; }
 .qr-slots article { display: grid; gap: 10px; padding: 17px; border: 1px solid var(--line); border-radius: 10px; }
 .qr-slots article > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .qr-slots article > div:first-child span { color: #61756a; font-size: 11px; }
@@ -408,6 +440,8 @@ dd { margin: 0; font-size: 11px; line-height: 1.45; }
 .qr-fullscreen { text-align: center; }
 .qr-fullscreen h3 { margin: 10px 0; font-size: 22px; }
 .qr-fullscreen img { display: block; width: 100%; max-height: min(68dvh, 740px); object-fit: contain; background: white; }
+.qr-fullscreen .ticket-qr-image { width: min(100%, 420px); height: auto; max-height: min(60dvh, 420px); margin: 0 auto; padding: 10px; image-rendering: pixelated; }
+.qr-ticket-note { color: #655540; font-size: 12px; line-height: 1.6; }
 .qr-viewer-actions { justify-content: center; margin-top: 12px; }
 .vault-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .vault-heading h2 { margin: 5px 0 0; font-family: var(--font-display); font-size: 25px; }
@@ -610,11 +644,17 @@ footer b { color: white; }
   .reservation-grid article { min-height: 190px; }
   .luggage-list article { grid-template-columns: 28px 1fr; padding: 15px; }
   .luggage-list .status { grid-column: 2; justify-self: start; }
-  .budget-total { grid-template-columns: 1fr; padding: 24px; }
-  .budget-total strong { grid-row: auto; grid-column: auto; margin-top: 10px; }
-  .budget-grid { grid-template-columns: 1fr 1fr; }
-  .budget-grid article { min-height: 120px; padding: 16px; }
-  .budget-grid b { font-size: 20px; }
+  .budget-switch { width: 100%; }
+  .budget-switch button { flex: 1; padding: 10px 8px; font-size: 13px; }
+  .budget-overview { grid-template-columns: 1fr; padding: 24px; gap: 22px; }
+  .budget-currency-totals { border-left: 0; border-top: 1px solid #ffffff30; padding: 18px 0 0; gap: 12px; }
+  .budget-currency-totals dd { font-size: 21px; }
+  .budget-detail-groups { grid-template-columns: 1fr; gap: 20px; }
+  .budget-currency-group > header { padding: 18px; }
+  .budget-currency-group header strong { font-size: 22px; }
+  .budget-cost-list li { padding: 18px; }
+  .budget-cost-top h4 { font-size: 15px; }
+  .budget-cost-top b { font-size: 19px; }
   .hotline-grid { grid-template-columns: 1fr; }
   .hotline-grid a { padding: 20px; }
   .insurance-card { padding: 20px; }
