@@ -1,4 +1,4 @@
-const CACHE_NAME = "tokyo-family-guide-v22-20260917-booking-confirmations";
+const CACHE_NAME = "tokyo-family-guide-v23-20260917-private-skyliner-qr";
 const APP_ROOT = "/tokyo-family-travel-guide/";
 const APP_SHELL = [APP_ROOT, `${APP_ROOT}manifest.webmanifest`, `${APP_ROOT}icon-192.png`, `${APP_ROOT}icon-512.png`];
 

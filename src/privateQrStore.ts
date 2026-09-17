@@ -5,7 +5,8 @@ const VERIFIER = "visit-japan-private-qr-v1";
 const ITERATIONS = 310_000;
 
 export const QR_SLOTS = [1, 2, 3] as const;
-export type QrSlot = typeof QR_SLOTS[number];
+export const SKYLINER_SLOT = "skyliner" as const;
+export type QrSlot = typeof QR_SLOTS[number] | typeof SKYLINER_SLOT;
 
 type EncryptedValue = { iv: Uint8Array<ArrayBuffer>; data: ArrayBuffer };
 type VaultMeta = { salt: Uint8Array<ArrayBuffer>; verifier: EncryptedValue };

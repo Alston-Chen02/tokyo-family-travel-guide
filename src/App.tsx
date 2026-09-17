@@ -531,18 +531,18 @@ function TodayPanel({
   </section>;
 }
 
-function ReservationHub({ weatherSwap }: { weatherSwap: boolean }) {
+function ReservationHub({ weatherSwap, onOpenSkylinerQr }: { weatherSwap: boolean; onOpenSkylinerQr: () => void }) {
   return <section className="reservation-section">
     <div className="section-heading compact"><span>TICKETS & BOOKINGS</span><h2>票券與預約，一次打開。</h2><p>把會在入口前臨時找不到的東西，先集中在這裡。</p></div>
     <div className="reservation-grid">{RESERVATION_HUB.map(item => <article key={item.id}>
       <div><span className={`status ${item.status.includes("待") || item.status === "確認票種" ? "pending" : "paid"}`}>{item.status}</span><small>{weatherSwap && item.id === "railway" ? "09/22 · 日本連假高人流（風雨備案）" : item.meta}</small></div>
       <h3>{item.title}</h3><p>{item.note}</p>
-      <a href={item.url} target="_blank" rel="noreferrer">{item.action} ↗</a>
+      <div className="reservation-actions">{item.id === "skyliner" && <button type="button" onClick={onOpenSkylinerQr}>開啟兌換 QR</button>}<a href={item.url} target="_blank" rel="noreferrer">{item.action} ↗</a></div>
     </article>)}</div>
   </section>;
 }
 
-function Bookings({ weatherSwap }: { weatherSwap: boolean }) {
+function Bookings({ weatherSwap, onOpenSkylinerQr }: { weatherSwap: boolean; onOpenSkylinerQr: () => void }) {
   return <section className="content-section">
     <div className="section-heading"><span>STAY & LUGGAGE</span><h2>旅宿與行李，都安排妥當。</h2><p>公開頁只放地址、電話與執行資訊；確認碼與姓名請儲存在這台裝置的私密保管箱。</p></div>
     <PrivateVault />
@@ -563,7 +563,7 @@ function Bookings({ weatherSwap }: { weatherSwap: boolean }) {
     </div>
     <div className="section-heading compact"><span>LUGGAGE RELAY</span><h2>行李先走，我們輕裝旅行。</h2></div>
     <div className="luggage-list">{LUGGAGE_ROUTE.map((item, i) => <article key={i}><div className="route-index">{i + 1}</div><div><b>{item.date} · {item.method}</b><h3>{item.from} <span>→</span> {item.to}</h3><p>{item.note}</p><small>{item.cost}</small></div><span className={`status ${item.status}`}>{item.status === "paid" ? "已付款" : "待確認"}</span></article>)}</div>
-    <ReservationHub weatherSwap={weatherSwap} />
+    <ReservationHub weatherSwap={weatherSwap} onOpenSkylinerQr={onOpenSkylinerQr} />
   </section>;
 }
 
@@ -687,6 +687,7 @@ export default function Home() {
   const [weatherSwap, setWeatherSwap] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [qrTarget, setQrTarget] = useState<"visit-japan" | "skyliner">("visit-japan");
   const [hydrated, setHydrated] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [offlineReady, setOfflineReady] = useState(false);
@@ -737,10 +738,11 @@ export default function Home() {
   const switchView = (next: View) => { setView(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const openToday = () => { setDayId(todayDay.id); setView("schedule"); window.setTimeout(() => document.querySelector(".day-shell")?.scrollIntoView({ behavior: "smooth" }), 40); };
   const install = async () => { if (!installPrompt) return; await installPrompt.prompt(); await installPrompt.userChoice; setInstallPrompt(null); };
+  const openQr = (target: "visit-japan" | "skyliner") => { setQrTarget(target); setQrOpen(true); };
 
   return <main>
     <header className="hero">
-      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => setQrOpen(true)} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
+      <nav className="topbar"><div className="brand"><i>東京</i><span><b>東京親子行旅</b><small>FAMILY JOURNEY · 2026</small></span></div><div className="topbar-actions"><button className="qr-action" type="button" onClick={() => openQr("visit-japan")} aria-label="開啟入境 QR 保管箱"><b>QR</b><span>入境 QR</span></button><button className="calculator-action" type="button" onClick={() => setCalculatorOpen(true)}><b>¥</b><span>日圓換算</span></button><button className="print-action" type="button" onClick={() => window.print()}><span>旅程備份 / 列印</span></button></div></nav>
       <div className="hero-content"><div><p className="kicker">TOKYO · SIX DAYS TOGETHER</p><h1>東京，慢慢走。<br/><em>六日親子行旅</em></h1><p className="hero-copy">2026/09/19 — 09/24 · 兩大一小<br/>從第一班航班到最後一件行李，旅程需要的都在這裡。</p></div><div className="trip-stamp"><span>6</span><b>DAYS</b><i>5 NIGHTS</i><small>TPE ⇄ NRT</small></div></div>
       <div className="hero-stats"><div><small>啟程</small><b>BR184</b><span>09/19 · 07:55</span></div><div><small>歸程</small><b>BR197</b><span>09/24 · 14:25</span></div><div><small>旅程記錄</small><b>{completedCount}/{tripTotal}</b><span>已完成 {Math.round(completedCount / tripTotal * 100)}%</span></div></div>
     </header>
@@ -762,14 +764,14 @@ export default function Home() {
         <div className="itinerary">{day.stops.map((stop, i) => <StopCard key={stop.id} stop={stop} index={i} done={completed.has(stop.id)} onToggle={() => toggle(stop.id)}/>)}</div>
       </section>
     </>}
-    {view === "bookings" && <Bookings weatherSwap={weatherSwap}/>}
+    {view === "bookings" && <Bookings weatherSwap={weatherSwap} onOpenSkylinerQr={() => openQr("skyliner")}/>}
     {view === "budget" && <Budget/>}
     {view === "typhoon" && <TyphoonTracker/>}
-    {view === "help" && <Help onOpenQr={() => setQrOpen(true)}/>}
+    {view === "help" && <Help onOpenQr={() => openQr("visit-japan")}/>}
 
     <footer><b>東京，慢慢走。· 2026 秋</b><span>所有原定行程與時間完整保留 · 旅途中依現場公告從容調整</span></footer>
     <CurrencyCalculator open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
-    {qrOpen && <QrVault onClose={() => setQrOpen(false)} />}
+    {qrOpen && <QrVault initialSlot={qrTarget === "skyliner" ? "skyliner" : undefined} onClose={() => setQrOpen(false)} />}
     <nav className="mobile-nav"><button className={view === "schedule" ? "active" : ""} onClick={() => switchView("schedule")}><i>日</i><span>行程</span></button><button className={view === "bookings" ? "active" : ""} onClick={() => switchView("bookings")}><i>宿</i><span>住宿</span></button><button className={view === "budget" ? "active" : ""} onClick={() => switchView("budget")}><i>費</i><span>旅費</span></button><button className={view === "typhoon" ? "active" : ""} onClick={() => switchView("typhoon")}><i>風</i><span>颱風</span></button><button className={view === "help" ? "active" : ""} onClick={() => switchView("help")}><i>助</i><span>應急</span></button><button type="button" onClick={() => setCalculatorOpen(true)}><i>¥</i><span>換算</span></button></nav>
   </main>;
 }
