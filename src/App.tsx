@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import InsuranceGuide from "./InsuranceGuide";
 import QrVault from "./QrVault";
-import ExpenseTracker from "./ExpenseTracker";
+import TravelBudget from "./TravelBudget";
 import TyphoonTracker from "./TyphoonTracker";
 import { WEATHER_SWAP_DAYS } from "./weatherSwap";
 import {
-  AIRFARE,
-  TRAVEL_INSURANCE,
-  AIRPORTER,
-  AIRPORT_TRANSFER,
   DAYS,
   EMERGENCY_PHRASES,
   EMERGENCY_INFO,
   FLIGHTS,
   HOTELS,
-  LUGGAGE_AGENT,
   LUGGAGE_ROUTE,
   MEDICAL_SEARCHES,
   RESERVATION_HUB,
@@ -29,10 +24,6 @@ const PRIVATE_VAULT_KEY = "tokyo-family-guide-private-vault-v1";
 const CHECKLIST_KEY = "tokyo-family-guide-checklist-v1";
 const EXCHANGE_RATE_STORAGE_KEY = "tokyo-family-guide-jpy-rate-v1";
 const DEFAULT_EXCHANGE_RATE = 0.2045;
-const JPY_RATE = 0.215;
-const AQUA_PARK_TICKETS_TWD = 1168;
-const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
-const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD + TRAVEL_INSURANCE.totalTwd;
 
 const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
 const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
@@ -567,22 +558,6 @@ function Bookings({ weatherSwap, onOpenSkylinerQr }: { weatherSwap: boolean; onO
   </section>;
 }
 
-function Budget() {
-  const items = [
-    ["機票費用", `NT$${money(AIRFARE.total)}`, "已付款 · 皇璽桂冠艙 2 大 1 小"],
-    ["住宿總計", "¥289,492", "已付款 · 希爾頓 2 晚、巨蛋 2 晚、樂天城市 1 晚"],
-    ["樂園門票", "¥21,800", "已付款 · 迪士尼成人 2 位、3 歲免費"],
-    ["Aqua Park 門票", `NT$${money(AQUA_PARK_TICKETS_TWD)}`, "已付款 · 成人票 2 張 NT$1,112 + No-show Refund NT$56"],
-    ["南山旅平險", `NT$${money(TRAVEL_INSURANCE.totalTwd)}`, "已購買 · 成人計畫二 × 2＋幼兒計畫六 × 1 · 6 日"],
-    ["當地交通", "¥12,000", "其中京成 Skyliner ¥5,770 已付款；其餘 Suica / PASMO 等仍為預估"],
-    ["餐飲與購物", "¥150,000", "預估"],
-    ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
-    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, "兩段各 ¥6,710 已付款 · 兩筆訂單號可分別存於本機保管箱"],
-    ["回程機場專車", `NT$${money(AIRPORT_TRANSFER.totalTwd)}`, "預估 · 含嬰兒座椅"],
-  ];
-  return <section className="content-section"><div className="section-heading"><span>TRIP BUDGET</span><h2>把預算，留給值得的風景。</h2><p>費用依原規劃完整保留 · 換算匯率 1 JPY ≈ NT$0.215</p></div><div className="budget-total"><small>六天五夜 · 旅程預算</small><strong>NT${money(budgetTwd)}</strong><span>日本當地 ¥{money(budgetJpy)} + 台幣固定支出</span></div><div className="budget-grid">{items.map(([label, amount, note]) => <article key={label}><span>{label}</span><b>{amount}</b><small>{note}</small></article>)}</div><ExpenseTracker /></section>;
-}
-
 const PRETRIP_CHECKS = [
   "護照、機票、住宿憑證已下載離線副本",
   "Visit Japan Web 與入境 QR Code 已準備",
@@ -765,7 +740,7 @@ export default function Home() {
       </section>
     </>}
     {view === "bookings" && <Bookings weatherSwap={weatherSwap} onOpenSkylinerQr={() => openQr("skyliner")}/>}
-    {view === "budget" && <Budget/>}
+    {view === "budget" && <TravelBudget/>}
     {view === "typhoon" && <TyphoonTracker/>}
     {view === "help" && <Help onOpenQr={() => openQr("visit-japan")}/>}
 
