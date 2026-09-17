@@ -32,7 +32,7 @@ const DEFAULT_EXCHANGE_RATE = 0.2045;
 const JPY_RATE = 0.215;
 const AQUA_PARK_TICKETS_TWD = 1168;
 const budgetJpy = 289492 + 21800 + 12000 + 150000 + AIRPORTER.totalJpy;
-const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORTER.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD + TRAVEL_INSURANCE.totalTwd;
+const budgetTwd = Math.round(budgetJpy * JPY_RATE) + AIRFARE.total + LUGGAGE_AGENT.totalTwd + AIRPORT_TRANSFER.totalTwd + AQUA_PARK_TICKETS_TWD + TRAVEL_INSURANCE.totalTwd;
 
 const WEATHER_CACHE_KEY = "tokyo-family-guide-weather-v1";
 const WEATHER_CACHE_MAX_AGE = 30 * 60 * 1000;
@@ -159,7 +159,8 @@ type InstallPromptEvent = Event & {
 const VAULT_FIELDS = [
   ["pnr", "長榮機票 PNR"], ["guest", "入住人英文姓名"],
   ["hotel1", "東京灣希爾頓確認碼"], ["hotel2", "東京巨蛋飯店確認碼"],
-  ["hotel3", "樂天城市飯店確認碼"], ["airporter", "Airporter 訂單號"],
+  ["hotel3", "樂天城市飯店確認碼"], ["airporter", "09/21 Airporter 訂單號"],
+  ["airporter23", "09/23 Airporter 訂單號"],
   ["insurance", "保單號碼"],
 ] as const;
 
@@ -573,10 +574,10 @@ function Budget() {
     ["樂園門票", "¥21,800", "已付款 · 迪士尼成人 2 位、3 歲免費"],
     ["Aqua Park 門票", `NT$${money(AQUA_PARK_TICKETS_TWD)}`, "已付款 · 成人票 2 張 NT$1,112 + No-show Refund NT$56"],
     ["南山旅平險", `NT$${money(TRAVEL_INSURANCE.totalTwd)}`, "已購買 · 成人計畫二 × 2＋幼兒計畫六 × 1 · 6 日"],
-    ["當地交通", "¥12,000", "預估 · Skyliner、Suica / PASMO"],
+    ["當地交通", "¥12,000", "其中京成 Skyliner ¥5,770 已付款；其餘 Suica / PASMO 等仍為預估"],
     ["餐飲與購物", "¥150,000", "預估"],
     ["LuggAgent", `NT$${money(LUGGAGE_AGENT.totalTwd)}`, `已付款 · US$${LUGGAGE_AGENT.totalUsd}`],
-    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, "已付款 · 訂單號存於本機保管箱"],
+    ["Airporter", `¥${money(AIRPORTER.totalJpy)}`, "兩段各 ¥6,710 已付款 · 兩筆訂單號可分別存於本機保管箱"],
     ["回程機場專車", `NT$${money(AIRPORT_TRANSFER.totalTwd)}`, "預估 · 含嬰兒座椅"],
   ];
   return <section className="content-section"><div className="section-heading"><span>TRIP BUDGET</span><h2>把預算，留給值得的風景。</h2><p>費用依原規劃完整保留 · 換算匯率 1 JPY ≈ NT$0.215</p></div><div className="budget-total"><small>六天五夜 · 旅程預算</small><strong>NT${money(budgetTwd)}</strong><span>日本當地 ¥{money(budgetJpy)} + 台幣固定支出</span></div><div className="budget-grid">{items.map(([label, amount, note]) => <article key={label}><span>{label}</span><b>{amount}</b><small>{note}</small></article>)}</div><ExpenseTracker /></section>;
